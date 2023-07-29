@@ -14,5 +14,16 @@
             "email": "yigitk.ersoy@gmail.com"
         }
     ],
-    "require": {}
+    "require-dev": {
+        "orchestra/testbench": "^6.28"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Skywarth\\ChaoticSchedule\\ChaoticScheduleServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
