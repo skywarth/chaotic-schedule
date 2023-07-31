@@ -26,16 +26,22 @@ class MersenneTwisterAdapter implements RandomNumberGeneratorAdapter
 
 
 
-    public function __construct(int $seed)
+    public function __construct(int $seed=null)
     {
-        $this->mersenneTwister=new MersenneTwister($seed);
+        if(!is_null($seed)){
+            $this->setSeed($seed);
+        }
 
     }
 
     public function intBetween(int $floor, int $ceil): int
     {
-        $this->mersenneTwister->rangeint($floor,$ceil);
+        return $this->mersenneTwister->rangeint($floor,$ceil);
     }
 
 
+    public static function getSlug(): string
+    {
+        return 'mersenne-twister';
+    }
 }

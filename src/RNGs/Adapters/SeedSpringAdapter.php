@@ -10,9 +10,13 @@ class SeedSpringAdapter implements RandomNumberGeneratorAdapter
 
     private SeedSpring $rng;
 
-    public function __construct(int $seed)
+    public function __construct(int $seed=null)
     {
-        $this->setSeed($seed);
+        //TODO: Abstract class for rng adapters. Constructors and some getters are common.
+        //TODO: getSeed function on abstract, throw exception in there perhaps.
+        if(!is_null($seed)){
+            $this->setSeed($seed);
+        }
 
     }
 
@@ -23,6 +27,11 @@ class SeedSpringAdapter implements RandomNumberGeneratorAdapter
 
     public function intBetween(int $floor, int $ceil): int
     {
-        $this->rng->getInt($floor,$ceil);
+        return $this->rng->getInt($floor,$ceil);
+    }
+
+    public static function getSlug(): string
+    {
+        return 'seed-spring';
     }
 }
