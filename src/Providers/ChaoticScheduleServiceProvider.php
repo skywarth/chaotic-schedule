@@ -1,8 +1,9 @@
 <?php
 
-namespace Skywarth\ChaoticSchedule;
+namespace Skywarth\ChaoticSchedule\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
 
 
 class ChaoticScheduleServiceProvider extends ServiceProvider
@@ -18,7 +19,7 @@ class ChaoticScheduleServiceProvider extends ServiceProvider
     public function register()
     {
 
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'chaotic-schedule');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/config.php', 'chaotic-schedule');
         $this->app->bind(ChaoticSchedule::class, function($app) {
             return new ChaoticSchedule();
         });
@@ -39,7 +40,7 @@ class ChaoticScheduleServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
 
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('chaotic-schedule'),
+                __DIR__ . '/../../config/config.php' => config_path('chaotic-schedule'),
             ], 'config');
 
         }

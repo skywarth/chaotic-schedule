@@ -20,7 +20,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Skywarth\\ChaoticSchedule\\ChaoticScheduleServiceProvider"
+                "Skywarth\\ChaoticSchedule\\Providers\\ChaoticScheduleServiceProvider"
             ]
         }
     },
