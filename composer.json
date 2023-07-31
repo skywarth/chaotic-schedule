@@ -25,5 +25,8 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require": {
+        "paragonie/seedspring": "^1.2"
+    }
 }
