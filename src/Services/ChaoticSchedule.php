@@ -16,6 +16,7 @@ class ChaoticSchedule
 
     public function __construct()
     {
+        $this->seeder=app()->make(SeedGenerationService::class);
         $this->rng=RNGFactory::getRngEngine();
     }
 
@@ -39,11 +40,11 @@ $minute = $twister->rangeint(0,1440) % 60;*/
         });
     }
 
-    public function randomTimeSchedule(Event $schedule,string $minTime, string $maxTime):Event{
+    public function randomTimeSchedule(Event $schedule,string $minTime, string $maxTime):Event{//TODO: nullable identifier for customization
 
 
-
-        $this->getRng()->setSeed($this->getSeeder()->seedForDay('replace-me-with-command'));
+        //TODO: line below looks ugly. Either apply Facade pattern or move seeder to be used in rng engine. Facade might be better.
+        $this->getRng()->setSeed($this->getSeeder()->seedForDay($this->getScheduleIdentifier($schedule)));
         //H:i is 24 hour format
         $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
         $maxTimeCasted=Carbon::createFromFormat('H:i',$maxTime);
@@ -84,6 +85,12 @@ $minute = $twister->rangeint(0,1440) % 60;*/
     protected function getSeeder(): SeedGenerationService
     {
         return $this->seeder;
+    }
+
+
+
+    protected function getScheduleIdentifier(Event $schedule):string{
+        return $schedule->command;
     }
 
 
