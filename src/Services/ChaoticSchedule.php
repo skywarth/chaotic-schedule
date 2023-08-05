@@ -5,6 +5,7 @@ namespace Skywarth\ChaoticSchedule\Services;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 
@@ -18,22 +19,29 @@ class ChaoticSchedule
     {
         $this->seeder=app()->make(SeedGenerationService::class);
         $this->rng=RNGFactory::getRngEngine();
+        //TODO: I'm still not convinced on this. Maybe there should be a facade that brings rng and seeder together.
     }
 
 
-    public function randomTimeSchedule(Event $schedule,string $minTime, string $maxTime,?string $uniqueIdentifier=null):Event{
+    /**
+     * @throws IncorrectRangeException
+     */
+    public function randomTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null):Event{
 
-        $uniqueIdentifier=$uniqueIdentifier??$this->getScheduleIdentifier($schedule);
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
 
         //H:i is 24 hour format
         $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
         $maxTimeCasted=Carbon::createFromFormat('H:i',$maxTime);
+        if($minTimeCasted->isAfter($maxTimeCasted)){
+            throw new IncorrectRangeException($minTime,$maxTime);
+        }
 
         $minMinuteOfTheDay=($minTimeCasted->hour * 60) + $minTimeCasted->minute;
         $maxMinuteOfTheDay=($maxTimeCasted->hour * 60) + $maxTimeCasted->minute;
 
         $randomMOTD=$this->getRng()
-            ->setSeed($this->getSeeder()->seedForDay($uniqueIdentifier))
+            ->setSeed($this->getSeeder()->seedForDay($identifier))
             ->intBetween($minMinuteOfTheDay,$maxMinuteOfTheDay);
 
 
@@ -42,6 +50,69 @@ class ChaoticSchedule
 
 
         $schedule->at("$designatedHour:$designatedMinute");
+
+        return $schedule;
+    }
+
+    /**
+     * @throws IncorrectRangeException
+     */
+    public function randomDailyTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null):Event{
+
+        //I know this method is such a sin, it is identical except one line.
+
+
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+
+        //H:i is 24 hour format
+        $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
+        $maxTimeCasted=Carbon::createFromFormat('H:i',$maxTime);
+        if($minTimeCasted->isAfter($maxTimeCasted)){
+            throw new IncorrectRangeException($minTime,$maxTime);
+        }
+
+        $minMinuteOfTheDay=($minTimeCasted->hour * 60) + $minTimeCasted->minute;
+        $maxMinuteOfTheDay=($maxTimeCasted->hour * 60) + $maxTimeCasted->minute;
+
+        $randomMOTD=$this->getRng()
+            ->setSeed($this->getSeeder()->seedForDay($identifier))
+            ->intBetween($minMinuteOfTheDay,$maxMinuteOfTheDay);
+
+
+        $designatedHour=$randomMOTD/60;
+        $designatedMinute=$randomMOTD%60;
+
+
+        $schedule->dailyAt("$designatedHour:$designatedMinute");
+
+        return $schedule;
+    }
+
+
+    /**
+     * @throws IncorrectRangeException
+     */
+    public function randomMinuteSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, ?string $uniqueIdentifier=null):Event{
+
+        if($minMinutes>$maxMinutes){
+            throw new IncorrectRangeException($minMinutes,$maxMinutes);
+        }
+        if($minMinutes<0 || $maxMinutes>59){
+            throw new \OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+        }
+
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+
+        //H:i is 24 hour format
+
+
+        $randomMinute=$this->getRng()
+            ->setSeed($this->getSeeder()->seedForDay($identifier))
+            ->intBetween($minMinutes,$maxMinutes);
+
+
+
+        $schedule->hourlyAt($randomMinute);
 
         return $schedule;
     }
@@ -64,8 +135,8 @@ class ChaoticSchedule
 
 
 
-    protected function getScheduleIdentifier(Event $schedule):string{
-        return $schedule->command;
+    protected function getScheduleIdentifier(Event $schedule,?string $uniqueIdentifier=null):string{
+        return $uniqueIdentifier??($schedule->command);
     }
 
 
@@ -81,17 +152,39 @@ class ChaoticSchedule
 
 
     */
-
+    //TODO: maybe move this section to service provider
     public function registerMacros(){
-        $this->registerRandomTimeScheduleMacro();
+        $this->registerAtRandomMacro();
+        $this->registerHourlyAtRandomMacro();
+        $this->registerDailyAtRandomRandomMacro();
     }
 
-    private function registerRandomTimeScheduleMacro(){
+    private function registerAtRandomMacro(){
         $chaoticSchedule=$this;
         Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
 
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier);
+
+        });
+    }
+
+    private function registerDailyAtRandomRandomMacro(){
+        $chaoticSchedule=$this;
+        Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+
+            return $chaoticSchedule->randomDailyTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier);
+
+        });
+    }
+
+    private function registerHourlyAtRandomMacro(){
+        $chaoticSchedule=$this;
+        Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+
+            return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier);
 
         });
     }
