@@ -18,10 +18,11 @@ class MersenneTwisterAdapter implements RandomNumberGeneratorAdapter
         return $this->seed;
     }
 
-    public function setSeed(int $seed)
+    public function setSeed(int $seed):MersenneTwisterAdapter
     {
         $this->seed=$seed;
         $this->mersenneTwister=new MersenneTwister($seed);
+        return $this;
     }
 
 

@@ -20,9 +20,10 @@ class SeedSpringAdapter implements RandomNumberGeneratorAdapter
 
     }
 
-    public function setSeed(int $seed)
+    public function setSeed(int $seed):SeedSpringAdapter
     {
         $this->rng=new SeedSpring($seed);
+        return $this;
     }
 
     public function intBetween(int $floor, int $ceil): int
