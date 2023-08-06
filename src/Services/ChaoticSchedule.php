@@ -3,9 +3,11 @@
 namespace Skywarth\ChaoticSchedule\Services;
 
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
+use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 
@@ -24,15 +26,19 @@ class ChaoticSchedule
 
 
     /**
-     * @throws IncorrectRangeException
+     * @throws IncorrectRangeException|InvalidDateFormatException
      */
     public function randomTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null):Event{
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
 
         //H:i is 24 hour format
-        $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
-        $maxTimeCasted=Carbon::createFromFormat('H:i',$maxTime);
+        try{
+            $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
+            $maxTimeCasted=Carbon::createFromFormat('H:i',$maxTime);
+        }catch (InvalidFormatException $ex){
+            throw new InvalidDateFormatException("Given time format is invalid. minTime and maxTime parameters should be in 'H:i' format.",0,$ex);
+        }
         if($minTimeCasted->isAfter($maxTimeCasted)){
             throw new IncorrectRangeException($minTime,$maxTime);
         }
