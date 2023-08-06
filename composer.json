@@ -8,6 +8,11 @@
             "Skywarth\\ChaoticSchedule\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Skywarth\\ChaoticSchedule\\Tests\\": "tests"
+        }
+    },
     "authors": [
         {
             "name": "skywarth",
@@ -15,7 +20,8 @@
         }
     ],
     "require-dev": {
-        "orchestra/testbench": "^6.28"
+        "orchestra/testbench": "^6.28",
+        "phpunit/phpunit": "^9.6"
     },
     "extra": {
         "laravel": {

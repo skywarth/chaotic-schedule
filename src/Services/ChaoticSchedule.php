@@ -32,6 +32,8 @@ class ChaoticSchedule
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
 
+        //dump($schedule->nextRunDate('now',0,true)->toDateTimeString());
+
         //H:i is 24 hour format
         try{
             $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
