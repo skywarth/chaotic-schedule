@@ -8,12 +8,31 @@ use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
 
 class RNGFactory
 {
-    public static function getRngEngine(int $seed=null):RandomNumberGeneratorAdapter{
-        $rngEngineSlug=config('chaotic-schedule.rng_engine.active_engine_slug');
+
+    private string $rngEngineSlug;
+
+    /**
+     * @param string $rngEngineSlug
+     */
+    public function __construct(string $rngEngineSlug)
+    {
+        $this->rngEngineSlug = $rngEngineSlug;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRngEngineSlug(): string
+    {
+        return $this->rngEngineSlug;
+    }
+
+
+    public function getRngEngine(int $seed=null):RandomNumberGeneratorAdapter{
         //TODO: array containing ::class for comparison, you don't really need if-else
-        if($rngEngineSlug===MersenneTwisterAdapter::getSlug()){
+        if($this->getRngEngineSlug()===MersenneTwisterAdapter::getSlug()){
             return new MersenneTwisterAdapter($seed);
-        }else if($rngEngineSlug===SeedSpringAdapter::getSlug()){
+        }else if($this->getRngEngineSlug()===SeedSpringAdapter::getSlug()){
             return new SeedSpringAdapter($seed);
         }else{
             //TODO: throw PROPER exception
