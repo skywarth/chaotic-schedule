@@ -110,7 +110,11 @@ class ChaoticSchedule
 
 
     protected function getScheduleIdentifier(Event $schedule,?string $uniqueIdentifier=null):string{
-        return $uniqueIdentifier??($schedule->command);
+        if(empty($uniqueIdentifier)){
+            $exploded=explode(' ',$schedule->command);
+            $uniqueIdentifier=$exploded[count($exploded)-1];
+        }
+        return $uniqueIdentifier;
     }
 
 
