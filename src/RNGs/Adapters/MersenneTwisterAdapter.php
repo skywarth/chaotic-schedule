@@ -4,19 +4,11 @@ namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
 use Skywarth\ChaoticSchedule\RNGs\MersenneTwister;
 
-class MersenneTwisterAdapter implements RandomNumberGeneratorAdapter
+class MersenneTwisterAdapter extends AbstractRNGAdapter
 {
     private MersenneTwister $mersenneTwister;
 
-    private int $seed;
 
-    /**
-     * @return int
-     */
-    public function getSeed(): int
-    {
-        return $this->seed;
-    }
 
     public function setSeed(int $seed):MersenneTwisterAdapter
     {
@@ -25,15 +17,6 @@ class MersenneTwisterAdapter implements RandomNumberGeneratorAdapter
         return $this;
     }
 
-
-
-    public function __construct(int $seed=null)
-    {
-        if(!is_null($seed)){
-            $this->setSeed($seed);
-        }
-
-    }
 
     public function intBetween(int $floor, int $ceil): int
     {

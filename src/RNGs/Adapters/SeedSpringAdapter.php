@@ -5,20 +5,9 @@ namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
 use ParagonIE\SeedSpring\SeedSpring;
 
-class SeedSpringAdapter implements RandomNumberGeneratorAdapter
+class SeedSpringAdapter extends AbstractRNGAdapter
 {
 
-    private SeedSpring $rng;
-
-    public function __construct(int $seed=null)
-    {
-        //TODO: Abstract class for rng adapters. Constructors and some getters are common.
-        //TODO: getSeed function on abstract, throw exception in there perhaps.
-        if(!is_null($seed)){
-            $this->setSeed($seed);
-        }
-
-    }
 
     public function setSeed(int $seed):SeedSpringAdapter
     {
