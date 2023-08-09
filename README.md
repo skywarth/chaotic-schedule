@@ -3,6 +3,12 @@
 It's a laravel package in development.
 
 
+## Installation (WIP)
+
+```php
+ php artisan vendor:publish --provider "Skywarth\ChaoticSchedule\Providers\ChaoticScheduleServiceProvider" --tag="config"
+```
+
 ## RNGs
 
 - Mersenne Twister
