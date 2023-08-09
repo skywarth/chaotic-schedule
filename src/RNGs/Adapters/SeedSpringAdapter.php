@@ -10,7 +10,7 @@ class SeedSpringAdapter extends AbstractRNGAdapter
 
 
     public function setSeed(int $seed):SeedSpringAdapter
-    {
+    {//TODO: move this to abstract and encapsulate the inner logic to an another abstract method. This setSeed however will be final.
         $this->rng=new SeedSpring($seed);
         return $this;
     }
@@ -23,5 +23,10 @@ class SeedSpringAdapter extends AbstractRNGAdapter
     public static function getSlug(): string
     {
         return 'seed-spring';
+    }
+
+    public static function validateSeed(): bool
+    {
+        // TODO: Implement validateSeed() method.
     }
 }

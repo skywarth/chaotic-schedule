@@ -21,7 +21,7 @@ It's a laravel package in development.
 - [ ] Problem: These damned PRNG doesn't work well with massive seed values.
   - [ ] Abstract class for RNG adapters to enforce seed format (size, type, etc.)
   - [ ] New hashing solution for steady flow of seeds (on SeedGenerationService).
-    - [ ] Every method in the service should pass through hashing, `intval` is just poor.
+    - [ ] Every method in the service should pass through hashing, `intval` on its own is just poor.
 - [X] [!] ~~Timezone adaptation, we should utilize timezone macro.~~ (Canceled. Not needed. Laravel handles it)
 - [X] Time based macros
   - [X] Random for `->at('15:30')`. Exact singular time.
