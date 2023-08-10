@@ -25,7 +25,7 @@ class SeedSpringAdapter extends AbstractRNGAdapter
         return 'seed-spring';
     }
 
-    public static function validateSeed(): bool
+    public static function validateSeed(int $seed): bool
     {
         // TODO: Implement validateSeed() method.
     }

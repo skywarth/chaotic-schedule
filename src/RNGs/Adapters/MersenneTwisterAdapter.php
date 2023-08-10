@@ -29,7 +29,7 @@ class MersenneTwisterAdapter extends AbstractRNGAdapter
         return 'mersenne-twister';
     }
 
-    public static function validateSeed(): bool
+    public static function validateSeed(int $seed): bool
     {
         // TODO: Implement validateSeed() method.
     }

@@ -18,6 +18,6 @@ interface RandomNumberGeneratorAdapter
      * @return bool
      * @throws InvalidSeedFormatException
      */
-    public static function validateSeed():bool;
+    public static function validateSeed(int $seed):bool;
 
 }

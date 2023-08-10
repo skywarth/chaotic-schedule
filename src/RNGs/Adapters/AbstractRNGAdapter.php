@@ -2,6 +2,8 @@
 
 namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
+use Skywarth\ChaoticSchedule\Exceptions\MissingSeedException;
+
 abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
 {
 
@@ -18,10 +20,22 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
 
     /**
      * @return int
+     * @throws MissingSeedException
      */
     public function getSeed(): int
     {
+        if(empty($this->seed)){
+            throw new MissingSeedException();
+        }
         return $this->seed;
+    }
+
+    abstract static function validateSeed(int $seed): bool;
+
+    public function setSeed(int $seed):RandomNumberGeneratorAdapter
+    {//TODO: move this to abstract and encapsulate the inner logic to an another abstract method. This setSeed however will be final.
+        self::validateSeed($seed);
+        return $this;
     }
 
 

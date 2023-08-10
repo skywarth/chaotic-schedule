@@ -12,32 +12,39 @@ class SeedGenerationService
     const PADDING_STRING='0';
 
 
+    private Carbon $basisDate;
+
+    /**
+     * @param Carbon|null $basisDate
+     */
+    public function __construct(?Carbon $basisDate=null)
+    {
+        if(empty($basisDate)){
+            $basisDate=Carbon::now();
+        }
+        $this->basisDate = $basisDate;
+    }
+
+
     public function seedForDay(string $uniqueIdentifier):int{
-        //return intval($this->dateString('ymd').$this->castUniqueIdentifier($uniqueIdentifier));
-        $str= $this->dateString('Dzy').$this->castUniqueIdentifier($uniqueIdentifier);
-        dump('concat:'.$str);
+        $str= $this->castUniqueIdentifier($uniqueIdentifier).$this->dateString('Dzy');
         $hashed=$this->hash($str);
-        dump([
-            'hashed'=>$hashed
-        ]);
         $seed= $this->castToSeedFormat($hashed);
-        dump($seed);
         return $seed;
     }
 
     public function seedForWeek(string $uniqueIdentifier):int{
-        //return intval($this->dateString('yW').$this->castUniqueIdentifier($uniqueIdentifier));
-        $str= $this->dateString('zW').$uniqueIdentifier;
-        return $this->castToSeedFormat($str);
+        $str= $this->castUniqueIdentifier($uniqueIdentifier).$this->dateString('Wy');
+        $hashed=$this->hash($str);
+        $seed= $this->castToSeedFormat($hashed);
+        return $seed;
     }
 
     private function dateString(string $format):string{
-        return Carbon::now()->addDays(6)->format($format);
+        return $this->basisDate->format($format);
     }
 
     private function castToSeedFormat(string $hash):int{
-        //TODO: maybe shuffle the string, then take X, then cast to intval ? NO, NO shuffling, it should be consistent !!!
-        //TODO: and the formatting (length,bytes)
         $hash=str_pad($hash,self::SEED_LENGTH,self::PADDING_STRING);
         $hash=substr($hash,0,self::SEED_LENGTH);
         return intval($hash);
