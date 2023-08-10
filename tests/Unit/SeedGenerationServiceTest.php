@@ -35,24 +35,25 @@ class SeedGenerationServiceTest extends TestCase
     public function test_seed_for_day_differs_per_date()
     {
         $seeds=collect();
+        $service=$this->getServiceInstance();
         $id='test';
-        Carbon::setTestNow(Carbon::now()->addDay());
+        $this->service->setBasisDate(Carbon::now()->addDay());
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        Carbon::setTestNow(Carbon::now()->addDays(3));
+        $this->service->setBasisDate(Carbon::now()->addDay(3));
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        Carbon::setTestNow(Carbon::now()->addWeeks(2));
+        $this->service->setBasisDate(Carbon::now()->addWeeks(2));
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        Carbon::setTestNow(Carbon::now()->addMonth());
+        $this->service->setBasisDate(Carbon::now()->addMonth());
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        Carbon::setTestNow(Carbon::now()->addYear());
+        $this->service->setBasisDate(Carbon::now()->addYear());
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );

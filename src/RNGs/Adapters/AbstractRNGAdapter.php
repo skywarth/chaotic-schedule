@@ -2,6 +2,7 @@
 
 namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
+use Skywarth\ChaoticSchedule\Exceptions\InvalidSeedFormatException;
 use Skywarth\ChaoticSchedule\Exceptions\MissingSeedException;
 
 abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
@@ -30,13 +31,18 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
         return $this->seed;
     }
 
-    abstract static function validateSeed(int $seed): bool;
 
-    public function setSeed(int $seed):RandomNumberGeneratorAdapter
-    {//TODO: move this to abstract and encapsulate the inner logic to an another abstract method. This setSeed however will be final.
-        self::validateSeed($seed);
-        return $this;
+
+    public final function setSeed(int $seed):RandomNumberGeneratorAdapter
+    {
+        if(!$this->validateSeed($seed)){//Maybe another method for padding the missing bytes/length ?
+            throw new InvalidSeedFormatException('Seed format is invalid.');
+        }
+
+        return $this->setProviderSeed($seed);
     }
+
+    abstract protected function setProviderSeed(int $seed):RandomNumberGeneratorAdapter;
 
 
 }

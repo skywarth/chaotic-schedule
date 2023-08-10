@@ -63,4 +63,17 @@ class SeedGenerationService
         //return crc32($uniqueIdentifier);
     }
 
+    /**
+     * @param Carbon $basisDate
+     */
+    public function setBasisDate(Carbon $basisDate): SeedGenerationService
+    {
+        //YOU SHOULD BE REALLY CAREFUL USING THIS.
+        //This method is meant mostly for testing purposes.
+        $this->basisDate = $basisDate;
+        return $this;//decorator for chaining
+    }
+
+
+
 }

@@ -18,8 +18,8 @@ It's a laravel package in development.
 
 ## TODOs
 
-- [ ] Problem: These damned PRNG doesn't work well with massive seed values.
-  - [ ] Abstract class for RNG adapters to enforce seed format (size, type, etc.)
+- [X] ~~Problem: These damned PRNG doesn't work well with massive seed values.~~
+  - [X] ~~Abstract class for RNG adapters to enforce seed format (size, type, etc.)~~
   - [X] ~~New hashing solution for steady flow of seeds (on SeedGenerationService).~~
     - [X] ~~Every method in the service should pass through hashing, `intval` on its own is just poor.~~
 - [X] [!] ~~Timezone adaptation, we should utilize timezone macro.~~ (Canceled. Not needed. Laravel handles it)

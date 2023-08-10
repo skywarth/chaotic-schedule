@@ -9,15 +9,6 @@ class MersenneTwisterAdapter extends AbstractRNGAdapter
     private MersenneTwister $mersenneTwister;
 
 
-
-    public function setSeed(int $seed):MersenneTwisterAdapter
-    {
-        $this->seed=$seed;
-        $this->mersenneTwister=new MersenneTwister($seed);
-        return $this;
-    }
-
-
     public function intBetween(int $floor, int $ceil): int
     {
         return $this->mersenneTwister->rangeint($floor,$ceil);
@@ -29,8 +20,15 @@ class MersenneTwisterAdapter extends AbstractRNGAdapter
         return 'mersenne-twister';
     }
 
-    public static function validateSeed(int $seed): bool
+    public function validateSeed(int $seed): bool
     {
-        // TODO: Implement validateSeed() method.
+        //Mersenne twister accepts any seed that is int
+        return true;
+    }
+
+    protected function setProviderSeed(int $seed): RandomNumberGeneratorAdapter
+    {
+        $this->mersenneTwister=new MersenneTwister($seed);
+        return $this;
     }
 }

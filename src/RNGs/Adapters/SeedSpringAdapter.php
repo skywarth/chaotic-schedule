@@ -8,16 +8,13 @@ use ParagonIE\SeedSpring\SeedSpring;
 class SeedSpringAdapter extends AbstractRNGAdapter
 {
 
+    const PROVIDER_SEED_BYTES=16;
+    private SeedSpring $seedSpring;
 
-    public function setSeed(int $seed):SeedSpringAdapter
-    {//TODO: move this to abstract and encapsulate the inner logic to an another abstract method. This setSeed however will be final.
-        $this->rng=new SeedSpring($seed);
-        return $this;
-    }
 
     public function intBetween(int $floor, int $ceil): int
     {
-        return $this->rng->getInt($floor,$ceil);
+        return $this->seedSpring->getInt($floor,$ceil);
     }
 
     public static function getSlug(): string
@@ -25,8 +22,17 @@ class SeedSpringAdapter extends AbstractRNGAdapter
         return 'seed-spring';
     }
 
-    public static function validateSeed(int $seed): bool
+    public function validateSeed(int $seed): bool
     {
-        // TODO: Implement validateSeed() method.
+        $binaryRepresentation = decbin($seed);
+
+        // Check the length of the binary representation
+        return strlen($binaryRepresentation) <= (self::PROVIDER_SEED_BYTES * 8);
+    }
+
+    protected function setProviderSeed(int $seed): RandomNumberGeneratorAdapter
+    {
+        $this->seedSpring=new SeedSpring($seed);
+        return $this;
     }
 }
