@@ -12,7 +12,6 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
 
     public function __construct(int $seed=null)
     {
-        //TODO: getSeed function on abstract (this class), throw exception in there perhaps.
         if(!is_null($seed)){
             $this->setSeed($seed);
         }

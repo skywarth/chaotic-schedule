@@ -35,30 +35,38 @@ class SeedGenerationServiceTest extends TestCase
     public function test_seed_for_day_differs_per_date()
     {
         $seeds=collect();
-        $service=$this->getServiceInstance();
         $id='test';
-        $this->service->setBasisDate(Carbon::now()->addDay());
+        $this->getServiceInstance()->setBasisDate(Carbon::now()->addDay());
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        $this->service->setBasisDate(Carbon::now()->addDay(3));
+        $this->getServiceInstance()->setBasisDate(Carbon::now()->addDay(3));
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        $this->service->setBasisDate(Carbon::now()->addWeeks(2));
+        $this->getServiceInstance()->setBasisDate(Carbon::now()->addWeeks(2));
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        $this->service->setBasisDate(Carbon::now()->addMonth());
+        $this->getServiceInstance()->setBasisDate(Carbon::now()->addMonth());
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        $this->service->setBasisDate(Carbon::now()->addYear());
+        $this->getServiceInstance()->setBasisDate(Carbon::now()->addYear());
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
         //assert that all of them are different and unique
         $this->assertSame($seeds->toArray(),$seeds->unique()->toArray());
+    }
+
+    public function test_seed_for_day_format(){
+
+        for($i=0;$i<30;$i++){
+            $seed=$this->getServiceInstance()->seedForDay($i);
+            $this->assertEquals(SeedGenerationService::SEED_LENGTH,strlen($seed));
+        }
+
     }
 
 

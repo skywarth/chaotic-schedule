@@ -6,8 +6,6 @@ use Carbon\Carbon;
 
 class SeedGenerationService
 {
-    //TODO: constructor and property: date. It'll enable mocking date.
-
     const SEED_LENGTH=16;//Because 'Seed Spring' RNG requires 16 byte integer. Maybe we may move padding to adapters if this alternates greatly between RNGs
     const PADDING_STRING='0';
 
