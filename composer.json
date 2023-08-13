@@ -26,6 +26,7 @@
     "extra": {
         "laravel": {
             "providers": [
+                "Skywarth\\ChaoticSchedule\\Providers\\SeedGenerationServiceProvider",
                 "Skywarth\\ChaoticSchedule\\Providers\\ChaoticScheduleServiceProvider"
             ]
         }

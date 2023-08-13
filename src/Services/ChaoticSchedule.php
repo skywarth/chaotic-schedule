@@ -17,9 +17,11 @@ class ChaoticSchedule
     private RandomNumberGeneratorAdapter $rng;
     private SeedGenerationService $seeder;
 
-    public function __construct()
+    public function __construct(SeedGenerationService $seeder)
     {
-        $this->seeder=app()->make(SeedGenerationService::class);
+        //$this->seeder=app()->make(SeedGenerationService::class);
+        $this->seeder=$seeder;
+        //$factory=app()->make(RNGFactory::class);
         $factory=new RNGFactory(config('chaotic-schedule.rng_engine.active_engine_slug'));
         $this->rng=$factory->getRngEngine();
         //TODO: I'm still not convinced on this. Maybe there should be a facade that brings rng and seeder together.
