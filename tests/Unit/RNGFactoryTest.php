@@ -19,11 +19,14 @@ class RNGFactoryTest extends TestCase
 
     }
 
-    public function test_provides_different_()
+    public function test_provides_different_adapter_per_slug()
     {
-        $factory=new RNGFactory('mersenne-twister');
-        $adapter=$factory->getRngEngine();
-        $this->assertInstanceOf(RandomNumberGeneratorAdapter::class,$adapter);
+        $factory1=new RNGFactory('mersenne-twister');
+        $adapter1=$factory1->getRngEngine();
+        $factory2=new RNGFactory('seed-spring');
+        $adapter2=$factory2->getRngEngine();
+        $this->assertNotSame($adapter1->getSlug(),$adapter2->getSlug());
+        $this->assertNotSame(get_class($adapter1),get_class($adapter2));
 
     }
 

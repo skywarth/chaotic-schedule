@@ -5,6 +5,7 @@ namespace Skywarth\ChaoticSchedule\Tests;
 
 
 use Skywarth\ChaoticSchedule\Providers\ChaoticScheduleServiceProvider;
+use Skywarth\ChaoticSchedule\Providers\RNGFactoryServiceProvider;
 use Skywarth\ChaoticSchedule\Providers\SeedGenerationServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase{
@@ -18,8 +19,10 @@ class TestCase extends \Orchestra\Testbench\TestCase{
     protected function getPackageProviders($app)
     {
         return [
+            //TODO: Do we even need these ? Maybe only for ChaoticSchedule ?
+            RNGFactoryServiceProvider::class,
             SeedGenerationServiceProvider::class,
-            ChaoticScheduleServiceProvider::class,
+            //ChaoticScheduleServiceProvider::class,
         ];
     }
 

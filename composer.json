@@ -1,7 +1,7 @@
 {
     "name": "skywarth/chaotic-schedule",
     "description": "Randomize scheduled command execution time and date intervals",
-    "type": "library",
+    "type": "laravel-package",
     "license": "Apache License 2.0",
     "autoload": {
         "psr-4": {
@@ -26,6 +26,7 @@
     "extra": {
         "laravel": {
             "providers": [
+                "Skywarth\\ChaoticSchedule\\Providers\\RNGFactoryServiceProvider",
                 "Skywarth\\ChaoticSchedule\\Providers\\SeedGenerationServiceProvider",
                 "Skywarth\\ChaoticSchedule\\Providers\\ChaoticScheduleServiceProvider"
             ]

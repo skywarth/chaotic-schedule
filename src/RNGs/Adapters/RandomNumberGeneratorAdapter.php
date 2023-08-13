@@ -11,7 +11,8 @@ interface RandomNumberGeneratorAdapter
     public function setSeed(int $seed):RandomNumberGeneratorAdapter;
     public function intBetween(int $floor, int $ceil):int;//TODO: determine inclusive/exclusive boundaries!
 
-    public static function getSlug():string;
+    public static function getAdapterSlug():string;
+    public function getSlug():string;
 
 
     /**

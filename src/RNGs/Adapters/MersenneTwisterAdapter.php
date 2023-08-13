@@ -15,7 +15,12 @@ class MersenneTwisterAdapter extends AbstractRNGAdapter
     }
 
 
-    public static function getSlug(): string
+    public static function getAdapterSlug(): string
+    {
+        return 'mersenne-twister';
+    }
+
+    public function getSlug(): string
     {
         return 'mersenne-twister';
     }
@@ -31,4 +36,6 @@ class MersenneTwisterAdapter extends AbstractRNGAdapter
         $this->mersenneTwister=new MersenneTwister($seed);
         return $this;
     }
+
+
 }

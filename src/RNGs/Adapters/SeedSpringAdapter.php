@@ -17,7 +17,12 @@ class SeedSpringAdapter extends AbstractRNGAdapter
         return $this->seedSpring->getInt($floor,$ceil);
     }
 
-    public static function getSlug(): string
+    public static function getAdapterSlug(): string
+    {
+        return 'seed-spring';
+    }
+
+    public function getSlug(): string
     {
         return 'seed-spring';
     }
