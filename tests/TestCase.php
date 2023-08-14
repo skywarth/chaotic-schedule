@@ -19,10 +19,9 @@ class TestCase extends \Orchestra\Testbench\TestCase{
     protected function getPackageProviders($app)
     {
         return [
-            //TODO: Do we even need these ? Maybe only for ChaoticSchedule ?
             RNGFactoryServiceProvider::class,
             SeedGenerationServiceProvider::class,
-            //ChaoticScheduleServiceProvider::class,
+            ChaoticScheduleServiceProvider::class,
         ];
     }
 
