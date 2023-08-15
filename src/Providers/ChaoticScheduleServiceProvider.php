@@ -23,7 +23,7 @@ class ChaoticScheduleServiceProvider extends ServiceProvider
        /* $this->app->bind(ChaoticSchedule::class, function($app) {
             return new ChaoticSchedule();
         });*/
-        $this->app->bind(ChaoticSchedule::class);
+        $this->app->bind(ChaoticSchedule::class);//TODO: Singleton perhaps
 
 
 
