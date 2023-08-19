@@ -39,7 +39,7 @@ It's a laravel package in development.
 - [ ] CI/CD pipeline (build, run tests, maybe auto publish?)
 - [ ] Unit tests
   - [ ] Time based methods and macros
-    - [ ] Macro registration assertion
+    - [X] Macro registration assertion
     - [ ] Consistency of generated randoms based on seed
     - [ ] Unique identifier (parameter and auto based on date)
     - [ ] Invalid params (out of range, min-max order, format)
