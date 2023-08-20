@@ -32,6 +32,7 @@ It's a laravel package in development.
   - [ ] [!] Seeds should be expanded and distinguished.
       Example case: `->days(Schedule::MONDAY,Schedule::FRIDAY,Schedule::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
       Config for this might be better. `->nextRunDate()` acts up for the `->daily()`.
+  - [ ] Closure parameters for adjustments and flexibility
 - [ ] Date based macros
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
