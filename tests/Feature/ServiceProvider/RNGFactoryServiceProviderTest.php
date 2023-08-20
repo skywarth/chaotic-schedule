@@ -23,9 +23,9 @@ class RNGFactoryServiceProviderTest extends TestCase
 
     public function test_rng_factory_depends_on_config()
     {
-        Config::set('chaotic-schedule.rng_engine.active_engine_slug','mersenne-twister');
+        $this->setConfigActiveSlug('mersenne-twister');
         $rngFactoryMersenne=app(RNGFactory::class);
-        Config::set('chaotic-schedule.rng_engine.active_engine_slug','seed-spring');
+        $this->setConfigActiveSlug('seed-spring');
         $rngFactorySeedSpring=app(RNGFactory::class);
         $this->assertNotEquals($rngFactoryMersenne->getRngEngineSlug(),$rngFactorySeedSpring->getRngEngineSlug());
         //Maybe reset config afterwards ?
@@ -33,7 +33,7 @@ class RNGFactoryServiceProviderTest extends TestCase
 
     public function test_rng_factory_override_slug_by_parameter()
     {
-        Config::set('chaotic-schedule.rng_engine.active_engine_slug','mersenne-twister');
+        $this->setConfigActiveSlug('mersenne-twister');
         $firstRngFactory=app(RNGFactory::class);
         $secondRngFactory=app(RNGFactory::class,['slug'=>'seed-spring']);
         $this->assertNotEquals($firstRngFactory->getRngEngineSlug(),$secondRngFactory->getRngEngineSlug());

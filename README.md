@@ -45,5 +45,5 @@ It's a laravel package in development.
   - [ ] Time based methods and macros
     - [X] Macro registration assertion
     - [ ] Consistency of generated randoms based on seed
-    - [ ] Unique identifier (parameter and auto based on date)
-    - [ ] Invalid params (out of range, min-max order, format)
+    - [X] Unique identifier (parameter and auto)
+    - [X] Invalid params (out of range, min-max order, format)

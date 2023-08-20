@@ -114,5 +114,32 @@ class ChaoticScheduleTest extends TestCase
         $this->assertEquals(true,$datesEqual);
     }
 
+    public function test_random_time_consistency_throughout_the_day()
+    {
+
+        //$chaoticSchedule=$this->getChaoticSchedule();
+
+        $designatedRuns=collect();
+
+        $date=Carbon::now()->startOfDay();
+        $schedule = new Schedule();
+        $schedule=$schedule->command('foo')->daily();
+        for($i=0;$i<100;$i++){
+            $chaoticSchedule=new ChaoticSchedule(
+                new SeedGenerationService($date),
+                new RNGFactory('mersenne-twister')
+            );
+            $nextRun=$chaoticSchedule->randomTimeSchedule($schedule,'09:00','21:00')->nextRunDate();
+            $designatedRuns->push($nextRun->format('Y-m-d H:i'));
+            $date->addMinutes(10);
+        }
+        $uniqueRunTimes=$designatedRuns->unique();
+
+        $this->assertEquals(1,$uniqueRunTimes->count());
+        $this->assertSame($designatedRuns->toArray()[0],$uniqueRunTimes[0]);
+
+
+    }
+
 
 }
