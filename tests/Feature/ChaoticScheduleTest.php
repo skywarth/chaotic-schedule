@@ -164,7 +164,6 @@ class ChaoticScheduleTest extends TestCase
 
 
     protected function calcChiSquared(Collection $observed, Collection $expected): float {
-        //TODO: move to UTIL
         $sum = 0;
 
         foreach ($observed as $index => $value) {
