@@ -3,6 +3,7 @@
 namespace Skywarth\ChaoticSchedule\Tests\Feature;
 
 use Carbon\Carbon;
+use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
@@ -24,6 +25,26 @@ class ChaoticScheduleTest extends TestCase
             );
         }
         return self::$chaoticSchedule;
+    }
+
+    protected const DefaultRNGEngineSlug='mersenne-twister';
+
+
+    protected function generateRandomTimeConsecutiveDays(int $daysCount,string $rngEngineSlug=self::DefaultRNGEngineSlug):Collection{
+        $date=Carbon::now()->startOfDay();
+        $schedule = new Schedule();
+        $schedule=$schedule->command('foo')->daily();
+        $schedules=collect();
+        for($i=0;$i<$daysCount;$i++){
+            $chaoticSchedule=new ChaoticSchedule(
+                new SeedGenerationService($date),
+                new RNGFactory($rngEngineSlug)
+            );
+            //$designatedRuns->push($nextRun->format('H:i'));
+            $schedules->push(clone $chaoticSchedule->randomTimeSchedule($schedule,'06:18','19:42'));
+            $date->addDay();
+        }
+        return $schedules;
     }
 
     public function test_random_time_incorrect_parameter_format_exception_1()
@@ -141,47 +162,8 @@ class ChaoticScheduleTest extends TestCase
     }*/
 
 
-    public function test_random_time_distribution_homogeneity_chi_squared()
-    {
 
-        $designatedRuns=collect();
-
-        $date=Carbon::now()->startOfDay();
-        $schedule = new Schedule();
-        $schedule=$schedule->command('foo')->daily();
-        for($i=0;$i<100;$i++){
-            $chaoticSchedule=new ChaoticSchedule(
-                new SeedGenerationService($date),
-                new RNGFactory('mersenne-twister')
-            );
-            $nextRun=$chaoticSchedule->randomTimeSchedule($schedule,'06:18','19:42')->nextRunDate();
-            $designatedRuns->push($nextRun->format('H:i'));
-            $date->addDay();
-        }
-        //dump($designatedRuns);
-        //$uniqueRunTimes=$designatedRuns->unique();
-        //dump($uniqueRunTimes);
-        $intervals=24*60;
-        $observed=collect()->pad($intervals, 0);
-
-
-        $designatedRuns->each(function ($time) use ($observed) {
-            $parts = explode(':', $time);
-            $hour = (int) $parts[0];
-            $minute = (int) $parts[1];
-            $index = $hour * 60 + $minute;
-            $observed->put($index, $observed[$index] + 1);
-        });
-
-        $expectedCount = $designatedRuns->count() / $intervals;
-        $expected = collect()->pad($intervals, $expectedCount);
-        $chiSquareStat = $this->chiSquaredTest($observed, $expected);
-
-        $chiSquareCriticalValue = 1499; // This value should be checked
-        $this->assertLessThan($chiSquareCriticalValue,$chiSquareStat);
-    }
-
-    function chiSquaredTest(Collection $observed, Collection $expected): float {
+    protected function calcChiSquared(Collection $observed, Collection $expected): float {
         //TODO: move to UTIL
         $sum = 0;
 
@@ -191,6 +173,37 @@ class ChaoticScheduleTest extends TestCase
 
         return $sum;
     }
+    public function test_random_time_distribution_homogeneity_chi_squared()
+    {
+
+        $schedules=$this->generateRandomTimeConsecutiveDays(100);
+        $designatedRuns=$schedules->map(function (Event $schedule){
+            return $schedule->nextRunDate();
+        });
+        $designatedRunTimes=$designatedRuns->map(function (Carbon $date){
+            return $date->format('H:i');
+        });
+        $intervals=24*60;
+        $observed=collect()->pad($intervals, 0);
+
+
+        $designatedRunTimes->each(function ($time) use ($observed) {
+            $parts = explode(':', $time);
+            $hour = (int) $parts[0];
+            $minute = (int) $parts[1];
+            $index = $hour * 60 + $minute;
+            $observed->put($index, $observed[$index] + 1);
+        });
+
+        $expectedCount = $designatedRunTimes->count() / $intervals;
+        $expected = collect()->pad($intervals, $expectedCount);
+        $chiSquareStat = $this->calcChiSquared($observed, $expected);
+
+        $chiSquareCriticalValue = 1499; // This value should be checked
+        $this->assertLessThan($chiSquareCriticalValue,$chiSquareStat);
+    }
+
+
 
 
 }
