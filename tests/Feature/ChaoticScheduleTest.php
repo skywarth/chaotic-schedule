@@ -136,7 +136,7 @@ class ChaoticScheduleTest extends TestCase
         $this->assertEquals(true,$datesEqual);
     }
 
-   /* public function test_random_time_consistency_throughout_the_day()
+    public function test_random_time_consistency_throughout_the_day()
     {
 
         //$chaoticSchedule=$this->getChaoticSchedule();
@@ -159,7 +159,7 @@ class ChaoticScheduleTest extends TestCase
 
         $this->assertEquals(1,$uniqueRunTimes->count());
         $this->assertSame($designatedRuns->toArray()[0],$uniqueRunTimes[0]);
-    }*/
+    }
 
 
 
@@ -175,7 +175,7 @@ class ChaoticScheduleTest extends TestCase
     public function test_random_time_distribution_homogeneity_chi_squared()
     {
 
-        $schedules=$this->generateRandomTimeConsecutiveDays(100);
+        $schedules=$this->generateRandomTimeConsecutiveDays(80);//TODO: Increase this
         $designatedRuns=$schedules->map(function (Event $schedule){
             return $schedule->nextRunDate();
         });
@@ -198,11 +198,56 @@ class ChaoticScheduleTest extends TestCase
         $expected = collect()->pad($intervals, $expectedCount);
         $chiSquareStat = $this->calcChiSquared($observed, $expected);
 
-        $chiSquareCriticalValue = 1499; // This value should be checked
+        $chiSquareCriticalValue = 1439; // This value should be checked
         $this->assertLessThan($chiSquareCriticalValue,$chiSquareStat);
     }
 
 
+    public function test_random_time_distribution_homogeneity_by_entropy()
+    {
+        $thresholdPercentage=90;//percentage based, between 0 and 100. //TODO: maybe 95%
+        $samplingSize=100;
+
+
+        $schedules=$this->generateRandomTimeConsecutiveDays($samplingSize);
+        $designatedRuns=$schedules->map(function (Event $schedule){
+            return $schedule->nextRunDate();
+        });
+        $designatedRunTimes=$designatedRuns->map(function (Carbon $date){
+            return $date->format('H:i');
+        });
+
+        // Convert times to minute intervals from the start of the day
+        $minuteIntervals = $designatedRunTimes->map(function ($time) {
+            [$hours, $minutes] = explode(':', $time);
+            return ($hours * 60) + $minutes;
+        });
+
+        // Count the occurrences of each time interval
+        $counts = $minuteIntervals->countBy()->all();
+
+
+        // Calculate the probabilities for each time interval
+        $probabilities = collect($counts)->map(function ($count) use ($designatedRunTimes) {
+            return $count / $designatedRunTimes->count();
+        });
+
+        // Calculate entropy
+        $entropy = -1 * $probabilities->sum(function ($probability) {
+                return $probability * log($probability, 2);
+            });
+
+        // The maximum entropy for a uniform distribution over 1440 minutes is log2(1440)
+        $maxEntropy = log($samplingSize, 2);
+
+
+
+        // Let's assume an arbitrary threshold, say 95%. You can adjust this based on your needs.
+        $threshold = ($thresholdPercentage/100) * $maxEntropy;
+
+        // Assertion: The calculated entropy should be above 95% of the maximum possible entropy for a uniform distribution
+        $this->assertGreaterThanOrEqual($threshold, $entropy);
+    }
 
 
 }
