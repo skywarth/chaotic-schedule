@@ -37,6 +37,7 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
         if(!$this->validateSeed($seed)){//Maybe another method for padding the missing bytes/length ?
             throw new InvalidSeedFormatException('Seed format is invalid.');
         }
+        $this->seed=$seed;
 
         return $this->setProviderSeed($seed);
     }

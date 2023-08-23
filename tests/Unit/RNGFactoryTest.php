@@ -31,6 +31,17 @@ class RNGFactoryTest extends TestCase
     }
 
 
+    public function test_get_rng_engine_with_initial_seed()
+    {
+        $initialSeed=1550;
+        $factory=new RNGFactory('mersenne-twister');
+        $adapter=$factory->getRngEngine($initialSeed);
+        $this->assertInstanceOf(RandomNumberGeneratorAdapter::class,$adapter);
+        $this->assertEquals($initialSeed,$adapter->getSeed());
+
+    }
+
+
 
 
 
