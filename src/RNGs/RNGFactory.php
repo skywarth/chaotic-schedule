@@ -36,8 +36,7 @@ class RNGFactory
         }else if($this->getRngEngineSlug()===SeedSpringAdapter::getAdapterSlug()){
             return new SeedSpringAdapter($seed);
         }else{
-            //TODO: throw PROPER exception
-            throw new \Exception('Uhh what');
+            throw new \UnexpectedValueException('Please provide a valid RNG Adapter slug. Example: "mersenne-twister". Check the documentation for details.');
         }
 
     }
