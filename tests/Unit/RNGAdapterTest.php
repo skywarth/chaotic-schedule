@@ -34,15 +34,9 @@ class RNGAdapterTest extends TestCase
 
     public function test_seed_validation_exception()
     {
-
-        //TOO: problem here with SeedSpring validation. That validation isn't really working
-/*
-
         $adapter=new SeedSpringAdapter();
         $this->expectException(InvalidSeedFormatException::class);
-        $adapter->setSeed(1234567890123456);*/
-
-
+        $adapter->setSeed(123);
     }
 
 

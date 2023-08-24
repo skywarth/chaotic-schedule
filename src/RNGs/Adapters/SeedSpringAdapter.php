@@ -29,10 +29,9 @@ class SeedSpringAdapter extends AbstractRNGAdapter
 
     public function validateSeed(int $seed): bool
     {
-        $binaryRepresentation = decbin($seed);
 
         // Check the length of the binary representation
-        return strlen($binaryRepresentation) <= (self::PROVIDER_SEED_BYTES * 8);
+        return strlen($seed) === (self::PROVIDER_SEED_BYTES);
     }
 
     protected function setProviderSeed(int $seed): RandomNumberGeneratorAdapter
