@@ -17,7 +17,7 @@
   Only the class `twister' is part of the API; everything else is private.
 
 */
-
+//https://github.com/ruafozy/php-mersenne-twister/blob/master/src/mersenne_twister.php
 namespace Skywarth\ChaoticSchedule\RNGs;
 
 use Exception;
