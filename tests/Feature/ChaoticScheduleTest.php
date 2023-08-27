@@ -30,7 +30,12 @@ class ChaoticScheduleTest extends TestCase
     protected const DefaultRNGEngineSlug='mersenne-twister';
 
 
-    protected function generateRandomTimeConsecutiveDays(int $daysCount,string $rngEngineSlug=self::DefaultRNGEngineSlug):Collection{
+    protected function generateRandomTimeConsecutiveDays(
+        int $daysCount,
+        string $rngEngineSlug=self::DefaultRNGEngineSlug,
+        string $minTime='06:18',
+        string $maxTime='19:42'
+    ):Collection{
         $date=Carbon::now()->startOfDay();
         $schedule = new Schedule();
         $schedule=$schedule->command('foo')->daily();
@@ -41,7 +46,7 @@ class ChaoticScheduleTest extends TestCase
                 new RNGFactory($rngEngineSlug)
             );
             //$designatedRuns->push($nextRun->format('H:i'));
-            $schedules->push(clone $chaoticSchedule->randomTimeSchedule($schedule,'06:18','19:42'));
+            $schedules->push(clone $chaoticSchedule->randomTimeSchedule($schedule,$minTime,$maxTime));
             $date->addDay();
         }
         return $schedules;
@@ -159,6 +164,33 @@ class ChaoticScheduleTest extends TestCase
 
         $this->assertEquals(1,$uniqueRunTimes->count());
         $this->assertSame($designatedRuns->toArray()[0],$uniqueRunTimes[0]);
+    }
+
+
+    public function test_random_time_within_limits()
+    {
+
+        $min=Carbon::createFromFormat('H:i','15:28');
+        $max=Carbon::createFromFormat('H:i','16:32');
+
+        $schedules=$this->generateRandomTimeConsecutiveDays(
+            100,
+            self::DefaultRNGEngineSlug,
+            $min->format('H:i'),
+            $max->format('H:i')
+        );
+        $designatedRuns=$schedules->map(function (Event $schedule){
+            return $schedule->nextRunDate();
+        });
+
+
+        $designatedRuns=$designatedRuns->filter(function (Carbon $carbon) use($min,$max){
+            return !($carbon->clone()->setDate($min->year,$min->month,$min->day)->between($min,$max));
+        });
+
+        $this->assertEquals(0,$designatedRuns->count());
+
+
     }
 
 

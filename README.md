@@ -36,6 +36,7 @@ It's a laravel package in development.
       Example case: `->days(Schedule::MONDAY,Schedule::FRIDAY,Schedule::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
       Config for this might be better. `->nextRunDate()` acts up for the `->daily()`.
   - [ ] Closure parameters for adjustments and flexibility
+  - [ ] Determine and indicate boundary inclusivity
 - [ ] Date based macros
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
