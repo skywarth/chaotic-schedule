@@ -14,6 +14,7 @@ class SeedSpringAdapter extends AbstractRNGAdapter
 
     public function intBetween(int $floor, int $ceil): int
     {
+        //Boundaries are inclusive
         return $this->seedSpring->getInt($floor,$ceil);
     }
 

@@ -21,6 +21,7 @@ It's a laravel package in development.
 
 ## TODOs
 
+- [ ] PHPDoc comments for methods and classes
 - [X] ~~Problem: These damned PRNG doesn't work well with massive seed values.~~
   - [X] ~~Abstract class for RNG adapters to enforce seed format (size, type, etc.)~~
   - [X] ~~New hashing solution for steady flow of seeds (on SeedGenerationService).~~
@@ -36,7 +37,7 @@ It's a laravel package in development.
       Example case: `->days(Schedule::MONDAY,Schedule::FRIDAY,Schedule::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
       Config for this might be better. `->nextRunDate()` acts up for the `->daily()`.
   - [ ] Closure parameters for adjustments and flexibility
-  - [ ] Determine and indicate boundary inclusivity
+  - [X] Determine and indicate boundary inclusivity
 - [ ] Date based macros
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
@@ -49,3 +50,6 @@ It's a laravel package in development.
     - [X] Unique identifier (parameter and auto)
     - [X] Invalid params (out of range, min-max order, format)
     - [ ] Boundaries are respected (min-max values, does the generated time exceed these limits ?)
+      - [ ] On RNGAdapter
+      - [X] On macros
+

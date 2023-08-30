@@ -10,7 +10,12 @@ interface RandomNumberGeneratorAdapter
 
     public function setSeed(int $seed):RandomNumberGeneratorAdapter;
     public function getSeed():int;
-    public function intBetween(int $floor, int $ceil):int;//TODO: determine inclusive/exclusive boundaries!
+
+
+    //Boundaries are inclusive
+    //E.g: [1,3]-> {1,2,3}
+    //Make sure to follow this fashion accordingly per adapter.
+    public function intBetween(int $floor, int $ceil):int;//TODO: determine inclusive/exclusive boundaries!.. Determined, pass it to PHPDoc
 
     public static function getAdapterSlug():string;
     public function getSlug():string;

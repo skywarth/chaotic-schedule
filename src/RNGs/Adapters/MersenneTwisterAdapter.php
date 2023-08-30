@@ -11,6 +11,7 @@ class MersenneTwisterAdapter extends AbstractRNGAdapter
 
     public function intBetween(int $floor, int $ceil): int
     {
+        //Boundaries are inclusive
         return $this->mersenneTwister->rangeint($floor,$ceil);
     }
 
