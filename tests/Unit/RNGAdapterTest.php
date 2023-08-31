@@ -39,6 +39,21 @@ class RNGAdapterTest extends TestCase
         $adapter->setSeed(123);
     }
 
+    public function test_intBetween_boundary_parameters_are_inclusive()
+    {
+        $adapter=new SeedSpringAdapter(3434834333333984);
+        $rnd1=$adapter->intBetween(5,5);
+        $this->assertEquals(5,$rnd1);
+        $rnd2=$adapter->intBetween(4096,4096);
+        $this->assertEquals(4096,$rnd2);
+        $rnd3=$adapter->intBetween(32,33);
+        $this->assertTrue(in_array($rnd3,[32,33]));
+        $rnd3=$adapter->intBetween(101,103);
+        $this->assertTrue(in_array($rnd3,[101,102,103]));
+
+
+    }
+
 
 
 

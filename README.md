@@ -46,10 +46,10 @@ It's a laravel package in development.
 - [ ] Unit tests
   - [ ] Time based methods and macros
     - [X] Macro registration assertion
-    - [ ] Consistency of generated randoms based on seed
+    - [X] Consistency of generated randoms based on seed
     - [X] Unique identifier (parameter and auto)
     - [X] Invalid params (out of range, min-max order, format)
-    - [ ] Boundaries are respected (min-max values, does the generated time exceed these limits ?)
-      - [ ] On RNGAdapter
+    - [X] Boundaries are respected (min-max values, does the generated time exceed these limits ?)
+      - [X] On RNGAdapter
       - [X] On macros
 
