@@ -31,7 +31,7 @@ class ChaoticSchedule
     /**
      * @throws IncorrectRangeException|InvalidDateFormatException
      */
-    public function randomTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null):Event{
+    public function randomTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
 
@@ -55,10 +55,18 @@ class ChaoticSchedule
             ->setSeed($this->getSeeder()->seedForDay($identifier))
             ->intBetween($minMinuteOfTheDay,$maxMinuteOfTheDay);
 
+        if(!empty($closure)){
+            dump($randomMOTD);
+            $randomMOTD=$closure($randomMOTD);
+            dump($randomMOTD);
+        }
 
-        $designatedHour=$randomMOTD/60;
+
+        $designatedHour=$randomMOTD/60;//TODO ensure it is compliant. Closure can easily mess up hour. Example +150, overflows to 24.91
         $designatedMinute=$randomMOTD%60;
 
+        dump(['hour'=>$designatedHour]);
+        dump(['min'=>$designatedMinute]);
 
         $schedule->at("$designatedHour:$designatedMinute");
 
@@ -141,10 +149,10 @@ class ChaoticSchedule
 
     private function registerAtRandomMacro(){
         $chaoticSchedule=$this;
-        Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null) use($chaoticSchedule){
+        Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
 
-            return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier);
+            return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
     }
