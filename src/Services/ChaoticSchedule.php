@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
@@ -29,7 +30,19 @@ class ChaoticSchedule
 
 
     /**
+     * @throws IncompatibleClosureResponse
+     */
+    private function validateClosureResponse($closureResponse, $expected){
+        $type=gettype($closureResponse);
+        if($type!==$expected){
+            throw new IncompatibleClosureResponse($expected,$type);
+        }
+    }
+
+
+    /**
      * @throws IncorrectRangeException|InvalidDateFormatException
+     * @throws IncompatibleClosureResponse
      */
     public function randomTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
@@ -56,27 +69,22 @@ class ChaoticSchedule
             ->intBetween($minMinuteOfTheDay,$maxMinuteOfTheDay);
 
         if(!empty($closure)){
-            dump($randomMOTD);
-            $randomMOTD=$closure($randomMOTD);
-            dump($randomMOTD);
+            $randomMOTD=$closure($randomMOTD,$schedule);
+            $this->validateClosureResponse($randomMOTD,'integer');
         }
 
 
-        $designatedHour=$randomMOTD/60;//TODO ensure it is compliant. Closure can easily mess up hour. Example +150, overflows to 24.91
+        $designatedHour=($randomMOTD/60)%24;
         $designatedMinute=$randomMOTD%60;
-
-        dump(['hour'=>$designatedHour]);
-        dump(['min'=>$designatedMinute]);
-
         $schedule->at("$designatedHour:$designatedMinute");
 
         return $schedule;
     }
 
     /**
-     * @throws IncorrectRangeException
+     * @throws IncorrectRangeException|IncompatibleClosureResponse
      */
-    public function randomMinuteSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, ?string $uniqueIdentifier=null):Event{
+    public function randomMinuteSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
         if($minMinutes>$maxMinutes){
             throw new IncorrectRangeException($minMinutes,$maxMinutes);
@@ -93,6 +101,14 @@ class ChaoticSchedule
         $randomMinute=$this->getRng()
             ->setSeed($this->getSeeder()->seedForDay($identifier))
             ->intBetween($minMinutes,$maxMinutes);
+
+
+        if(!empty($closure)){
+            $randomMinute=$closure($randomMinute,$schedule);
+            $this->validateClosureResponse($randomMinute,'integer');
+        }
+
+        $randomMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
 
 
 
@@ -159,20 +175,20 @@ class ChaoticSchedule
 
     private function registerDailyAtRandomRandomMacro(){
         $chaoticSchedule=$this;
-        Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null) use($chaoticSchedule){
+        Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
 
-            return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier);
+            return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
     }
 
     private function registerHourlyAtRandomMacro(){
         $chaoticSchedule=$this;
-        Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null) use($chaoticSchedule){
+        Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
 
-            return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier);
+            return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
 
         });
     }
