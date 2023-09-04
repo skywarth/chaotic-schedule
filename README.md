@@ -44,7 +44,7 @@ It's a laravel package in development.
   - [ ] Random for `->monthlyOn(1, '8:00');`
 - [ ] CI/CD pipeline (build, run tests, maybe auto publish?)
 - [ ] Unit tests
-  - [ ] Time based methods and macros
+  - [X] Time based methods and macros
     - [X] Macro registration assertion
     - [X] Consistency of generated randoms based on seed
     - [X] Unique identifier (parameter and auto)
@@ -52,5 +52,5 @@ It's a laravel package in development.
     - [X] Boundaries are respected (min-max values, does the generated time exceed these limits ?)
       - [X] On RNGAdapter
       - [X] On macros
-    - [ ] Closures
+    - [X] Closures
 

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
+use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
@@ -61,14 +62,36 @@ class ChaoticScheduleTest extends TestCase
 
     }
 
-    /*public function test_random_time_incorrect_parameter_format_2()
+    public function test_random_time_closure_param_even_numbers_only()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
-        $this->expectException(InvalidDateFormatException::class);
-        $this->getChaoticSchedule()->randomTimeSchedule($schedule,'10:00','55:70');
+        $runDates=collect();
+        for ($i=0;$i<25;$i++){
+            $date=$this->getChaoticSchedule()->randomTimeSchedule($schedule,'09:06','09:44','test'.$i,function (int $motd){
+                //return $motd;//ensures that it only schedules for odd-number minutes
+                return ($motd-(($motd%2)-1));//ensures that it only schedules/runs on only odd-number minutes
+            })->nextRunDate();
+            $runDates->push($date->minute);
+        }
 
-    }*/
+        $evenMinuteRuns=$runDates->filter(function($runMin){
+           return $runMin%2==0;
+        });
+
+        $this->assertEquals(0,$evenMinuteRuns->count());
+
+    }
+
+    public function test_random_time_closure_throws_incompatible_response()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(IncompatibleClosureResponse::class);
+        $this->getChaoticSchedule()->randomTimeSchedule($schedule,'09:00','15:00','test2',function (int $motd){
+            return [];
+        });
+    }
 
     public function test_random_time_incorrect_parameter_order_exception()
     {
