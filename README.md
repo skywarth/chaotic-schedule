@@ -2,6 +2,8 @@
 
 [![codecov](https://codecov.io/gh/skywarth/chaotic-schedule/graph/badge.svg?token=GNSG586LG2)](https://codecov.io/gh/skywarth/chaotic-schedule)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=skywarth_chaotic-schedule&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=skywarth_chaotic-schedule)
+[![DeepSource](https://app.deepsource.com/gh/skywarth/chaotic-schedule.svg/?label=active+issues&show_trend=true&token=klpu6ClKPxNZm4A8fTPx8fJU)](https://app.deepsource.com/gh/skywarth/chaotic-schedule/?ref=repository-badge)
+[![DeepSource](https://app.deepsource.com/gh/skywarth/chaotic-schedule.svg/?label=resolved+issues&show_trend=true&token=klpu6ClKPxNZm4A8fTPx8fJU)](https://app.deepsource.com/gh/skywarth/chaotic-schedule/?ref=repository-badge)
 
 It's a laravel package in development.
 
@@ -42,7 +44,7 @@ It's a laravel package in development.
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
   - [ ] Random for `->monthlyOn(1, '8:00');`
-- [ ] CI/CD pipeline (build, run tests, maybe auto publish?)
+- [X] CI/CD pipeline (build, run tests, maybe auto publish?)
 - [ ] Unit tests
   - [X] Time based methods and macros
     - [X] Macro registration assertion
