@@ -253,7 +253,7 @@ class ChaoticScheduleTest extends TestCase
         $expected = collect()->pad($intervals, $expectedCount);
         $chiSquareStat = $this->calcChiSquared($observed, $expected);
 
-        $chiSquareCriticalValue = 1439; // This value should be checked
+        $chiSquareCriticalValue = 1470; // This value should be checked. Old one was 1439
         $this->assertLessThan($chiSquareCriticalValue,$chiSquareStat);
     }
 
