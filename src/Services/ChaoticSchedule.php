@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
@@ -113,6 +114,28 @@ class ChaoticSchedule
 
 
         $schedule->hourlyAt($randomMinute);
+
+        return $schedule;
+    }
+
+
+    public function randomDays(Event $schedule, int $scheduleBasis,?string $uniqueIdentifier=null):Event{
+
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+
+        RandomDateScheduleBasis::validate($scheduleBasis);
+
+        $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$scheduleBasis);
+        $randomMOTD=$this->getRng()
+            ->setSeed($seed);
+            //->intBetween($minMinuteOfTheDay,$maxMinuteOfTheDay);
+
+        if(!empty($closure)){
+            $randomMOTD=$closure($randomMOTD,$schedule);
+            $this->validateClosureResponse($randomMOTD,'integer');
+        }
+
+        //WIP!!
 
         return $schedule;
     }
