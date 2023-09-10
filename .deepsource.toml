@@ -1,8 +1,9 @@
 version = 1
 
-[[analyzers]]
-name = "php"
-
 exclude_patterns = [
   "src/RNGs/MersenneTwister.php",
 ]
+
+[[analyzers]]
+name = "php"
+
