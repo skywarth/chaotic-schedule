@@ -119,16 +119,42 @@ class ChaoticSchedule
     }
 
 
-    public function randomDays(Event $schedule, int $scheduleBasis,?string $uniqueIdentifier=null):Event{
 
+
+    public function randomDays(Event $schedule, int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null):Event{
+        if(empty($daysOfTheWeek)){
+            $daysOfTheWeek=[
+                Schedule::MONDAY,
+                Schedule::TUESDAY,
+                Schedule::WEDNESDAY,
+                Schedule::THURSDAY,
+                Schedule::FRIDAY,
+                Schedule::SATURDAY,
+                Schedule::SUNDAY,
+            ];
+        }
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+        //TODO: validate times
+        //TODO: validate daysOfTheWeek
 
-        RandomDateScheduleBasis::validate($scheduleBasis);
+        RandomDateScheduleBasis::validate($period);
 
-        $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$scheduleBasis);
-        $randomMOTD=$this->getRng()
-            ->setSeed($seed);
-            //->intBetween($minMinuteOfTheDay,$maxMinuteOfTheDay);
+        $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$period);
+        $this->getRng()->setSeed($seed);
+
+
+        $randomTimes=$this->getRng()->intBetween($timesMin,$timesMax);
+
+        //TODO: We need a handling for generating pRNG numbers in exact order. Something like ->next() or ->seek().
+
+        $designatedRuns=collect();
+        for($i=0,$i<=$randomTimes;$i++;){
+            $designatedRun=Carbon::now(); //DO the magic here
+            $designatedRuns->push($designatedRun);
+        }
+
+
+
 
         if(!empty($closure)){
             $randomMOTD=$closure($randomMOTD,$schedule);

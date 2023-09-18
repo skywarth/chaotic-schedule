@@ -65,8 +65,8 @@ It's a laravel package in development.
   - So here's the gatherings so far, analysis:
     - `period` context. Week, month, year...
     - Constraints and limitations: `days of the week` (separate param), `buffer` (Separate param? .what should be the minimum diff between designated runs) ,others (such as running only on odd number days) can be handled via closures hopefully  
-    - There is `times`, defining how many times it should run for the given period. It is not related at all with random time schedules.
-    - `times` should be validated to not exceed max possible runs for the given period and constraints (day of the weeks etc)
+    - There is `times`, defining how many times it should run for the given `period`. It is not related at all with random time schedules.
+    - `times` should be validated to not exceed max possible runs for the given `period` and constraints (day of the weeks etc)
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
   - [ ] Random for `->monthlyOn(1, '8:00');`
