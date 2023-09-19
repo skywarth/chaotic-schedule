@@ -33,4 +33,8 @@ class RandomDateScheduleBasis
         ];
     }
 
+    public static function getString(int $enumVal):string{
+        return array_flip(self::getAll())[$enumVal];
+    }
+
 }

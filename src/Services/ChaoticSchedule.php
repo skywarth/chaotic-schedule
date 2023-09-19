@@ -3,6 +3,7 @@
 namespace Skywarth\ChaoticSchedule\Services;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
@@ -121,7 +122,7 @@ class ChaoticSchedule
 
 
 
-    public function randomDays(Event $schedule, int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null):Event{
+    public function randomDays(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
         if(empty($daysOfTheWeek)){
             $daysOfTheWeek=[
                 Schedule::MONDAY,
@@ -137,9 +138,9 @@ class ChaoticSchedule
         //TODO: validate times
         //TODO: validate daysOfTheWeek
 
-        RandomDateScheduleBasis::validate($period);
+        RandomDateScheduleBasis::validate($periodType);
 
-        $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$period);
+        $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$periodType);
         $this->getRng()->setSeed($seed);
 
 
@@ -147,11 +148,30 @@ class ChaoticSchedule
 
         //TODO: We need a handling for generating pRNG numbers in exact order. Something like ->next() or ->seek().
 
+
         $designatedRuns=collect();
-        for($i=0,$i<=$randomTimes;$i++;){
-            $designatedRun=Carbon::now(); //DO the magic here
+        $periodBegin=Carbon::now()->startOf(RandomDateScheduleBasis::getString($periodType));
+        $periodEnd=Carbon::now()->endOf(RandomDateScheduleBasis::getString($periodType));
+        dump($periodBegin);
+        dump($periodEnd);
+        $period=CarbonPeriod::create($periodBegin, $periodEnd);
+        $possibleDates=collect();
+        //TODO: either do the filtering on the CarbonPeriod or the collection. Doing on the CarbonPeriod might be far efficient
+        foreach ($period as $index=>$date){
+            $possibleDates->push($date);
+        }
+
+
+
+
+
+        for($i=0;$i<=$randomTimes;$i++){
+            $designatedRun=$possibleDates->random();
             $designatedRuns->push($designatedRun);
         }
+
+
+        dd('a');
 
 
 
@@ -210,6 +230,8 @@ class ChaoticSchedule
         $this->registerAtRandomMacro();
         $this->registerHourlyAtRandomMacro();
         $this->registerDailyAtRandomRandomMacro();
+
+        $this->registerRandomDaysRenameMeMacro();
     }
 
     private function registerAtRandomMacro(){
@@ -238,6 +260,17 @@ class ChaoticSchedule
             //Laravel automatically injects and replaces $this in the context
 
             return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
+
+        });
+    }
+
+
+    private function registerRandomDaysRenameMeMacro(){
+        $chaoticSchedule=$this;
+        Event::macro('randomDaysRenameMe', function (int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+
+            return $chaoticSchedule->randomDays($this,$period,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier);
 
         });
     }
