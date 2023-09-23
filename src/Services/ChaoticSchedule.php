@@ -125,6 +125,7 @@ class ChaoticSchedule
     public function randomDays(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
         if(empty($daysOfTheWeek)){
             $daysOfTheWeek=[
+                /*
                 Schedule::MONDAY,
                 Schedule::TUESDAY,
                 Schedule::WEDNESDAY,
@@ -132,8 +133,17 @@ class ChaoticSchedule
                 Schedule::FRIDAY,
                 Schedule::SATURDAY,
                 Schedule::SUNDAY,
+                */
+                Carbon::MONDAY,
+                Carbon::TUESDAY,
+                Carbon::WEDNESDAY,
+                Carbon::THURSDAY,
+                Carbon::FRIDAY,
+                Carbon::SATURDAY,
+                Carbon::SUNDAY,
             ];
         }
+
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
         //TODO: validate times
         //TODO: validate daysOfTheWeek
@@ -147,31 +157,35 @@ class ChaoticSchedule
         $randomTimes=$this->getRng()->intBetween($timesMin,$timesMax);
 
         //TODO: We need a handling for generating pRNG numbers in exact order. Something like ->next() or ->seek().
+        //update: i think it does it automatically
+
+
+
+        $periodBegin=Carbon::now()->startOf(RandomDateScheduleBasis::getString($periodType));
+        $periodEnd=Carbon::now()->endOf(RandomDateScheduleBasis::getString($periodType));
+
+        $period=CarbonPeriod::create($periodBegin, $periodEnd);
+
+        /*foreach ($period as $index=>$date){
+            $possibleDates->push($date);
+        }*/
+        $period=collect($period->toArray());
+        //TODO: either do the filtering on the CarbonPeriod or the collection. Doing on the CarbonPeriod might be far efficient
+        $possibleDates=$period->filter(function (Carbon $date) use($daysOfTheWeek){
+            //filter based on designated $daysOfTheWeek and MAYBE closure
+            return in_array($date->dayOfWeek,$daysOfTheWeek);
+        });
+
 
 
         $designatedRuns=collect();
-        $periodBegin=Carbon::now()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=Carbon::now()->endOf(RandomDateScheduleBasis::getString($periodType));
-        dump($periodBegin);
-        dump($periodEnd);
-        $period=CarbonPeriod::create($periodBegin, $periodEnd);
-        $possibleDates=collect();
-        //TODO: either do the filtering on the CarbonPeriod or the collection. Doing on the CarbonPeriod might be far efficient
-        foreach ($period as $index=>$date){
-            $possibleDates->push($date);
-        }
-
-
-
-
-
-        for($i=0;$i<=$randomTimes;$i++){
+        for($i=0;$i<$randomTimes;$i++){
             $designatedRun=$possibleDates->random();
             $designatedRuns->push($designatedRun);
         }
 
 
-        dd('a');
+        dd($designatedRuns);
 
 
 
