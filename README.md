@@ -70,6 +70,8 @@ It's a laravel package in development.
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
   - [ ] Random for `->monthlyOn(1, '8:00');`
+- [ ] Indicating next runs dates. Either via overriding `schedule:list` or defining a custom command which works specifically for commands that use our macros.
+  - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
 - [ ] Unit tests
   - [X] Time based methods and macros

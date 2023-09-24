@@ -180,20 +180,32 @@ class ChaoticSchedule
 
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
-            $designatedRun=$possibleDates->random();
+            $designatedRun=$possibleDates->random();//TODO: this breaks the pRNG contract, this is not pseudo random and certainly not bound to seed. Fix it.
             $designatedRuns->push($designatedRun);
         }
 
-
-        dd($designatedRuns);
-
-
-
-
+        /*
         if(!empty($closure)){
             $randomMOTD=$closure($randomMOTD,$schedule);
             $this->validateClosureResponse($randomMOTD,'integer');
-        }
+        }*/
+
+        //https://laravel.com/docs/10.x/scheduling#truth-test-constraints
+        //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
+        //So this usage shouldn't stir other ->when() statements
+        $schedule->when(function (Event $event) use($designatedRuns){
+            $today=Carbon::now();
+            return $designatedRuns->contains(function (Carbon $runDate) use($today){
+               return $today->isSameDay($runDate);
+            });
+        });
+
+
+
+
+
+
+
 
         //WIP!!
 
