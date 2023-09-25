@@ -35,6 +35,7 @@ class ChaoticSchedule
      * @throws IncompatibleClosureResponse
      */
     private function validateClosureResponse($closureResponse, $expected){
+        //TODO: expected should also be used as closure. Both applicable, closure and primitive types
         $type=gettype($closureResponse);
         if($type!==$expected){
             throw new IncompatibleClosureResponse($expected,$type);
@@ -174,21 +175,26 @@ class ChaoticSchedule
         $possibleDates=$period->filter(function (Carbon $date) use($daysOfTheWeek){
             //filter based on designated $daysOfTheWeek and MAYBE closure
             return in_array($date->dayOfWeek,$daysOfTheWeek);
-        });
+        })->values();//values() is for reindexing, so the keys are sure to be consecutive integers
+
+
+
+        if(!empty($closure)){
+            $randomMOTD=$closure($possibleDates,$schedule);//I'm still not sure whether we should pass $possibleDates or $designatedRuns to the closure.
+            $this->validateClosureResponse($randomMOTD,'object');//Collection of dates expected
+        }
 
 
 
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
-            $designatedRun=$possibleDates->random();//TODO: this breaks the pRNG contract, this is not pseudo random and certainly not bound to seed. Fix it.
+            //$designatedRun=$possibleDates->random();//TODO: this breaks the pRNG contract, this is not pseudo random and certainly not bound to seed. Fix it.
+            $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
+            $designatedRun=$possibleDates->get($randomIndex);
             $designatedRuns->push($designatedRun);
         }
 
-        /*
-        if(!empty($closure)){
-            $randomMOTD=$closure($randomMOTD,$schedule);
-            $this->validateClosureResponse($randomMOTD,'integer');
-        }*/
+
 
         //https://laravel.com/docs/10.x/scheduling#truth-test-constraints
         //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
