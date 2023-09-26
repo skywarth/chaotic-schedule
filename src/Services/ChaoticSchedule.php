@@ -123,7 +123,7 @@ class ChaoticSchedule
 
 
 
-    public function randomDays(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
+    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
         if(empty($daysOfTheWeek)){
             $daysOfTheWeek=[
                 /*
@@ -263,7 +263,7 @@ class ChaoticSchedule
         $this->registerHourlyAtRandomMacro();
         $this->registerDailyAtRandomRandomMacro();
 
-        $this->registerRandomDaysRenameMeMacro();
+        $this->registerRandomDaysMacro();
     }
 
     private function registerAtRandomMacro(){
@@ -297,12 +297,12 @@ class ChaoticSchedule
     }
 
 
-    private function registerRandomDaysRenameMeMacro(){
+    private function registerRandomDaysMacro(){
         $chaoticSchedule=$this;
-        Event::macro('randomDaysRenameMe', function (int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null) use($chaoticSchedule){
+        Event::macro('randomDays', function (int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
 
-            return $chaoticSchedule->randomDays($this,$period,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier);
+            return $chaoticSchedule->randomDaysSchedule($this,$period,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier);
 
         });
     }
