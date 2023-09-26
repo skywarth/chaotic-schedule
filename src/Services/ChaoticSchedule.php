@@ -206,6 +206,21 @@ class ChaoticSchedule
             });
         });
 
+        $today=Carbon::now();
+        $closestDesignatedRun=$designatedRuns->filter(function (Carbon $date){
+            return $date->isFuture();//Careful, works implicitly with Carbon::now()
+        })->sortBy(function (Carbon $date) use($today){
+           return $date->diffInDays($today);
+        })->first();
+
+
+        $day = $closestDesignatedRun->day;
+        $month = $closestDesignatedRun->month;
+
+        //Below enables to indicate nextRunDate
+        //Hopefully it also enables testing whether it'll run at given date or not
+        $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
+
 
 
 
