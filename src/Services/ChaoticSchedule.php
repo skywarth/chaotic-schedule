@@ -47,6 +47,16 @@ class ChaoticSchedule
         }
     }
 
+    private function scheduleToDate(Event $schedule,Carbon $date):Event{
+        $day = $date->day;
+        $month = $date->month;
+
+        //Below enables to indicate nextRunDate
+        //Hopefully it also enables testing whether it'll run at given date or not
+        return $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
+
+    }
+
 
     /**
      * @throws IncorrectRangeException|InvalidDateFormatException
@@ -211,8 +221,6 @@ class ChaoticSchedule
             return $dateOnly->isAfter($this->getBasisDate()->startOfDay()) || $dateOnly->isSameDay($this->getBasisDate()->startOfDay()); //TODO: simplify
         });
 
-
-
         //https://laravel.com/docs/10.x/scheduling#truth-test-constraints
         //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
         //So this usage shouldn't stir other ->when() statements
@@ -229,13 +237,18 @@ class ChaoticSchedule
             })->first();
 
 
+            $schedule=$this->scheduleToDate($schedule,$closestDesignatedRun);
+        }else{
+            // This section means there is no designatedRun date available.
+            // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
+            $schedule->when(function (Event $event) use($designatedRuns){
+              return false;
+            });
 
-            $day = $closestDesignatedRun->day;
-            $month = $closestDesignatedRun->month;
+            $bogusDate=$periodEnd->clone()->next(RandomDateScheduleBasis::getString($periodType));//Maybe instead of this, just offset to next  year.
 
-            //Below enables to indicate nextRunDate
-            //Hopefully it also enables testing whether it'll run at given date or not
-            $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
+
+            $schedule=$this->scheduleToDate($schedule,$bogusDate);
         }
 
 
