@@ -31,6 +31,11 @@ class ChaoticSchedule
     }
 
 
+    public function getBasisDate():Carbon{
+        return $this->seeder->getBasisDate();//maybe add clone as well ?
+    }
+
+
     /**
      * @throws IncompatibleClosureResponse
      */
@@ -162,10 +167,11 @@ class ChaoticSchedule
 
 
 
-        $periodBegin=Carbon::now()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=Carbon::now()->endOf(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$this->getBasisDate()->startOf(RandomDateScheduleBasis::getString($periodType));
+        $periodEnd=$this->getBasisDate()->endOf(RandomDateScheduleBasis::getString($periodType));
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
+
 
         /*foreach ($period as $index=>$date){
             $possibleDates->push($date);
@@ -186,44 +192,51 @@ class ChaoticSchedule
 
 
 
+
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
             //$designatedRun=$possibleDates->random();//TODO: this breaks the pRNG contract, this is not pseudo random and certainly not bound to seed. Fix it.
             $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
             $designatedRun=$possibleDates->get($randomIndex);
             $designatedRuns->push($designatedRun);
+            $possibleDates->forget($randomIndex);
+            $possibleDates=$possibleDates->values();//re-indexing
         }
+
+
+
+        //Filtering out past dates, leaving only future runs
+        $designatedRuns=$designatedRuns->filter(function (Carbon $date){
+            $dateOnly=$date->startOfDay();
+            return $dateOnly->isAfter($this->getBasisDate()->startOfDay()) || $dateOnly->isSameDay($this->getBasisDate()->startOfDay()); //TODO: simplify
+        });
 
 
 
         //https://laravel.com/docs/10.x/scheduling#truth-test-constraints
         //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
         //So this usage shouldn't stir other ->when() statements
-        $schedule->when(function (Event $event) use($designatedRuns){
-            $today=Carbon::now();
-            return $designatedRuns->contains(function (Carbon $runDate) use($today){
-               return $today->isSameDay($runDate);
+        if($designatedRuns->isNotEmpty()){
+            $schedule->when(function (Event $event) use($designatedRuns){
+                return $designatedRuns->contains(function (Carbon $runDate){
+                    return $this->getBasisDate()->isSameDay($runDate);
+                });
             });
-        });
-
-        $today=Carbon::now();
-        $closestDesignatedRun=$designatedRuns->filter(function (Carbon $date){
-            return $date->isFuture();//Careful, works implicitly with Carbon::now()
-        })->sortBy(function (Carbon $date) use($today){
-           return $date->diffInDays($today);
-        })->first();
 
 
-        $day = $closestDesignatedRun->day;
-        $month = $closestDesignatedRun->month;
-
-        //Below enables to indicate nextRunDate
-        //Hopefully it also enables testing whether it'll run at given date or not
-        $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
+            $closestDesignatedRun=$designatedRuns->sortBy(function (Carbon $date){
+                return $date->diffInDays($this->getBasisDate());
+            })->first();
 
 
 
+            $day = $closestDesignatedRun->day;
+            $month = $closestDesignatedRun->month;
 
+            //Below enables to indicate nextRunDate
+            //Hopefully it also enables testing whether it'll run at given date or not
+            $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
+        }
 
 
 

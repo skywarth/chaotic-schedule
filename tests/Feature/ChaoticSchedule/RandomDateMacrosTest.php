@@ -33,20 +33,14 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
     public function test_random_days_week_basis_all_DOW_exact_times()
     {
-        $nowMock=Carbon::createFromDate(2023,6,01);
+        $nowMock=Carbon::createFromDate(2023,6,01);//Thursday
         //$nowMock=Carbon::now();
         $periodType=RandomDateScheduleBasis::WEEK;
-        $timesMin=2;
-        $timesMax=2;
+        $timesMin=3;
+        $timesMax=3;
         $daysOfWeek=[];
 
-        $schedule = new Schedule();
-        $schedule=$schedule->command('test');
-        $chaoticSchedule=new ChaoticSchedule(
-            new SeedGenerationService($nowMock),
-            new RNGFactory('mersenne-twister')
-        );
-        $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,2,2);
+
 
         //assertion
         $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
@@ -57,18 +51,23 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
         $runsCounter=0;
         foreach ($period as $index=>$date){
-            dump($date->format('d-m-Y'));
+
+            $schedule = new Schedule();
+            $schedule=$schedule->command('test');
+            $chaoticSchedule=new ChaoticSchedule(
+                new SeedGenerationService($date),
+                new RNGFactory('mersenne-twister')
+            );
+            $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,$timesMin,$timesMax);
 
             $this->assertTrue($date->isBetween($periodBegin,$periodEnd),'Generated random date is not in the range');
 
             Carbon::setTestNow($date); //Mock carbon now for Laravel event
             if($schedule->isDue(app())){
-                //TODO: isDue not working due (no pun intended) to the fact that we don't register any date scheduling on the command.
-                //How about we simply do indicate direct date on the schedule, in the randomDays ?
                 $runsCounter++;
                 $this->assertContains($date->dayOfWeek,self::AllDOW);
             }
-            Carbon::setTestNow($date);//resetting the carbon::now to original
+            Carbon::setTestNow();//resetting the carbon::now to original
         }
 
         $this->assertGreaterThanOrEqual($timesMin,$runsCounter);

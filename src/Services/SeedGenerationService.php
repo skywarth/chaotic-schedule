@@ -21,7 +21,7 @@ class SeedGenerationService
         if(empty($basisDate)){
             $basisDate=Carbon::now();
         }
-        $this->basisDate = $basisDate;
+        $this->setBasisDate($basisDate);
     }
 
 
@@ -54,7 +54,7 @@ class SeedGenerationService
     }
 
     private function dateString(string $format):string{
-        return $this->basisDate->format($format);
+        return $this->getBasisDate()->format($format);
     }
 
     private function castToSeedFormat(string $hash):int{
@@ -101,6 +101,13 @@ class SeedGenerationService
         $this->basisDate = $basisDate;
         return $this;//decorator for chaining
     }
+
+    public function getBasisDate(): Carbon
+    {
+        return $this->basisDate->clone();
+    }
+
+
 
 
 
