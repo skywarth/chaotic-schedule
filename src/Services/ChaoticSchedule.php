@@ -3,9 +3,11 @@
 namespace Skywarth\ChaoticSchedule\Services;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
@@ -29,14 +31,30 @@ class ChaoticSchedule
     }
 
 
+    public function getBasisDate():Carbon{
+        return $this->seeder->getBasisDate();//maybe add clone as well ?
+    }
+
+
     /**
      * @throws IncompatibleClosureResponse
      */
     private function validateClosureResponse($closureResponse, $expected){
+        //TODO: expected should also be used as closure. Both applicable, closure and primitive types
         $type=gettype($closureResponse);
         if($type!==$expected){
             throw new IncompatibleClosureResponse($expected,$type);
         }
+    }
+
+    private function scheduleToDate(Event $schedule,Carbon $date):Event{
+        $day = $date->day;
+        $month = $date->month;
+
+        //Below enables to indicate nextRunDate
+        //Hopefully it also enables testing whether it'll run at given date or not
+        return $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
+
     }
 
 
@@ -117,6 +135,130 @@ class ChaoticSchedule
         return $schedule;
     }
 
+
+
+
+    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
+        if(empty($daysOfTheWeek)){
+            $daysOfTheWeek=[
+                /*
+                Schedule::MONDAY,
+                Schedule::TUESDAY,
+                Schedule::WEDNESDAY,
+                Schedule::THURSDAY,
+                Schedule::FRIDAY,
+                Schedule::SATURDAY,
+                Schedule::SUNDAY,
+                */
+                Carbon::MONDAY,
+                Carbon::TUESDAY,
+                Carbon::WEDNESDAY,
+                Carbon::THURSDAY,
+                Carbon::FRIDAY,
+                Carbon::SATURDAY,
+                Carbon::SUNDAY,
+            ];
+        }
+
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+        //TODO: validate times
+        //TODO: validate daysOfTheWeek
+
+        RandomDateScheduleBasis::validate($periodType);
+
+        $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$periodType);
+        $this->getRng()->setSeed($seed);
+
+
+        $randomTimes=$this->getRng()->intBetween($timesMin,$timesMax);
+
+        //TODO: We need a handling for generating pRNG numbers in exact order. Something like ->next() or ->seek().
+        //update: i think it does it automatically
+
+
+
+        $periodBegin=$this->getBasisDate()->startOf(RandomDateScheduleBasis::getString($periodType));
+        $periodEnd=$this->getBasisDate()->endOf(RandomDateScheduleBasis::getString($periodType));
+
+        $period=CarbonPeriod::create($periodBegin, $periodEnd);
+
+
+        /*foreach ($period as $index=>$date){
+            $possibleDates->push($date);
+        }*/
+        $period=collect($period->toArray());
+        //TODO: either do the filtering on the CarbonPeriod or the collection. Doing on the CarbonPeriod might be far efficient
+        $possibleDates=$period->filter(function (Carbon $date) use($daysOfTheWeek){
+            //filter based on designated $daysOfTheWeek and MAYBE closure
+            return in_array($date->dayOfWeek,$daysOfTheWeek);
+        })->values();//values() is for reindexing, so the keys are sure to be consecutive integers
+
+
+
+        if(!empty($closure)){
+            $randomMOTD=$closure($possibleDates,$schedule);//I'm still not sure whether we should pass $possibleDates or $designatedRuns to the closure.
+            $this->validateClosureResponse($randomMOTD,'object');//Collection of dates expected
+        }
+
+
+
+
+        $designatedRuns=collect();
+        for($i=0;$i<$randomTimes;$i++){
+            //$designatedRun=$possibleDates->random();//TODO: this breaks the pRNG contract, this is not pseudo random and certainly not bound to seed. Fix it.
+            $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
+            $designatedRun=$possibleDates->get($randomIndex);
+            $designatedRuns->push($designatedRun);
+            $possibleDates->forget($randomIndex);
+            $possibleDates=$possibleDates->values();//re-indexing
+        }
+
+
+
+        //Filtering out past dates, leaving only future runs
+        $designatedRuns=$designatedRuns->filter(function (Carbon $date){
+            $dateOnly=$date->startOfDay();
+            return $dateOnly->isAfter($this->getBasisDate()->startOfDay()) || $dateOnly->isSameDay($this->getBasisDate()->startOfDay()); //TODO: simplify
+        });
+
+        //https://laravel.com/docs/10.x/scheduling#truth-test-constraints
+        //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
+        //So this usage shouldn't stir other ->when() statements
+        if($designatedRuns->isNotEmpty()){
+            $schedule->when(function (Event $event) use($designatedRuns){
+                return $designatedRuns->contains(function (Carbon $runDate){
+                    return $this->getBasisDate()->isSameDay($runDate);
+                });
+            });
+
+
+            $closestDesignatedRun=$designatedRuns->sortBy(function (Carbon $date){
+                return $date->diffInDays($this->getBasisDate());
+            })->first();
+
+
+            $schedule=$this->scheduleToDate($schedule,$closestDesignatedRun);
+        }else{
+            // This section means there is no designatedRun date available.
+            // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
+            $schedule->when(function (Event $event) use($designatedRuns){
+              return false;
+            });
+
+            $bogusDate=$periodEnd->clone()->next(RandomDateScheduleBasis::getString($periodType));//Maybe instead of this, just offset to next  year.
+
+
+            $schedule=$this->scheduleToDate($schedule,$bogusDate);
+        }
+
+
+
+
+        //WIP!!
+
+        return $schedule;
+    }
+
     /**
      * @return RandomNumberGeneratorAdapter
      */
@@ -161,6 +303,8 @@ class ChaoticSchedule
         $this->registerAtRandomMacro();
         $this->registerHourlyAtRandomMacro();
         $this->registerDailyAtRandomRandomMacro();
+
+        $this->registerRandomDaysMacro();
     }
 
     private function registerAtRandomMacro(){
@@ -189,6 +333,17 @@ class ChaoticSchedule
             //Laravel automatically injects and replaces $this in the context
 
             return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
+
+        });
+    }
+
+
+    private function registerRandomDaysMacro(){
+        $chaoticSchedule=$this;
+        Event::macro('randomDays', function (int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+
+            return $chaoticSchedule->randomDaysSchedule($this,$period,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier);
 
         });
     }
