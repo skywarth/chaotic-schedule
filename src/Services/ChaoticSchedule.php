@@ -53,6 +53,7 @@ class ChaoticSchedule
 
         //Below enables to indicate nextRunDate
         //Hopefully it also enables testing whether it'll run at given date or not
+        //The fact that we can't schedule including the year is terrible. Makes testing and planning miserable.
         return $schedule->cron("* * $day $month *");//Laravel cron doesn't allow year, sad :'(
 
     }
@@ -65,8 +66,6 @@ class ChaoticSchedule
     public function randomTimeSchedule(Event $schedule, string $minTime, string $maxTime, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
-
-        //dump($schedule->nextRunDate('now',0,true)->toDateTimeString());
 
         //H:i is 24 hour format
         try{
@@ -221,6 +220,7 @@ class ChaoticSchedule
             return $dateOnly->isAfter($this->getBasisDate()->startOfDay()) || $dateOnly->isSameDay($this->getBasisDate()->startOfDay()); //TODO: simplify
         });
 
+
         //https://laravel.com/docs/10.x/scheduling#truth-test-constraints
         //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
         //So this usage shouldn't stir other ->when() statements
@@ -247,6 +247,10 @@ class ChaoticSchedule
 
             $bogusDate=$periodEnd->clone()->next(RandomDateScheduleBasis::getString($periodType));//Maybe instead of this, just offset to next  year.
 
+            if($periodType===RandomDateScheduleBasis::YEAR){
+                $bogusDate->addDay();//otherwise it'll reschedule for today next year, and since we can't indicate year on laravel CRON, it resolves as to running today.
+                //since it's bogus date, we can alter it as we please. As long as it prevents the command from running
+            }
 
             $schedule=$this->scheduleToDate($schedule,$bogusDate);
         }

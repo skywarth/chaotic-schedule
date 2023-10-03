@@ -42,7 +42,6 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
         $runsCounter=0;
         foreach ($period as $index=>$date){
-
             $schedule = new Schedule();
             $schedule=$schedule->command('test');
             $chaoticSchedule=new ChaoticSchedule(
@@ -55,10 +54,12 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
             Carbon::setTestNow($date); //Mock carbon now for Laravel event
             if($schedule->isDue(app())){
+
                 $runsCounter++;
 
                 $this->assertTrue($date->isBetween($periodBegin,$periodEnd),'Generated random run date is not in the range');
                 $this->assertContains($date->dayOfWeek,$daysOfWeek);
+
             }
             Carbon::setTestNow();//resetting the carbon::now to original
         }
@@ -128,11 +129,61 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     {
         $nowMock=Carbon::createFromDate(2018,03,22);
         $periodType=RandomDateScheduleBasis::MONTH;
-        $timesMin=4;
-        $timesMax=4;
+        $timesMin=7;
+        $timesMax=7;
         $daysOfWeek=self::AllDOW;
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
+
+    public function test_month_basis_selective_DOW_exact_times()
+    {
+        $nowMock=Carbon::createFromDate(2018,03,22);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=12;
+        $timesMax=12;
+        $daysOfWeek=[Carbon::MONDAY,Carbon::WEDNESDAY,Carbon::THURSDAY,Carbon::SUNDAY];//Sunday Lunch...
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+
+    public function test_month_basis_all_DOW_random_times()
+    {
+        $nowMock=Carbon::createFromDate(2015,06,25);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=10;
+        $timesMax=25;
+        $daysOfWeek=self::AllDOW;
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_month_basis_selective_DOW_random_times()
+    {
+        $nowMock=Carbon::createFromDate(2022,10,01);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=0;
+        $timesMax=9;
+        $daysOfWeek=[Carbon::THURSDAY,Carbon::TUESDAY,Carbon::SATURDAY];
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+
+    /*
+     ██    ██ ███████  █████  ██████      ██████   █████  ███████ ██ ███████
+      ██  ██  ██      ██   ██ ██   ██     ██   ██ ██   ██ ██      ██ ██
+       ████   █████   ███████ ██████      ██████  ███████ ███████ ██ ███████
+        ██    ██      ██   ██ ██   ██     ██   ██ ██   ██      ██ ██      ██
+        ██    ███████ ██   ██ ██   ██     ██████  ██   ██ ███████ ██ ███████
+     */
+
+    public function test_year_basis_all_DOW_exact_times()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::YEAR;
+        $timesMin=100;
+        $timesMax=100;
+        $daysOfWeek=self::AllDOW;
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+    }
 
 }
