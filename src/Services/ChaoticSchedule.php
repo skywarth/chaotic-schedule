@@ -7,10 +7,13 @@ use Carbon\CarbonPeriod;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
+use InvalidArgumentException;
+use LogicException;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
+use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 
@@ -19,6 +22,16 @@ class ChaoticSchedule
 
     private RandomNumberGeneratorAdapter $rng;
     private SeedGenerationService $seeder;
+
+    public const ALL_DOW=[
+        Carbon::MONDAY,
+        Carbon::TUESDAY,
+        Carbon::WEDNESDAY,
+        Carbon::THURSDAY,
+        Carbon::FRIDAY,
+        Carbon::SATURDAY,
+        Carbon::SUNDAY,
+    ];
 
     public function __construct(SeedGenerationService $seeder, RNGFactory $factory)
     {
@@ -135,35 +148,35 @@ class ChaoticSchedule
     }
 
 
-
-
+    /**
+     * @throws IncorrectRangeException
+     * @throws InvalidScheduleBasisProvided
+     * @throws IncompatibleClosureResponse
+     */
     public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
         if(empty($daysOfTheWeek)){
-            $daysOfTheWeek=[
-                /*
-                Schedule::MONDAY,
-                Schedule::TUESDAY,
-                Schedule::WEDNESDAY,
-                Schedule::THURSDAY,
-                Schedule::FRIDAY,
-                Schedule::SATURDAY,
-                Schedule::SUNDAY,
-                */
-                Carbon::MONDAY,
-                Carbon::TUESDAY,
-                Carbon::WEDNESDAY,
-                Carbon::THURSDAY,
-                Carbon::FRIDAY,
-                Carbon::SATURDAY,
-                Carbon::SUNDAY,
-            ];
+            $daysOfTheWeek=self::ALL_DOW;
+        }else{
+            //Validate DOW
+            foreach ($daysOfTheWeek as $dayNum){
+                if(!in_array($dayNum,self::ALL_DOW)){
+                    throw new InvalidArgumentException("The number=$dayNum doesn't correspond to a day of the week number (Carbon).");
+                }
+            }
         }
 
+        //Validations...
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
-        //TODO: validate times
-        //TODO: validate daysOfTheWeek
+        if($timesMin<0 || $timesMax<0){
+            throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');
+        }
+        if($timesMin>$timesMax){
+            throw new IncorrectRangeException($timesMin,$timesMax);
+        }
 
         RandomDateScheduleBasis::validate($periodType);
+
+
 
         $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$periodType);
         $this->getRng()->setSeed($seed);
@@ -182,9 +195,6 @@ class ChaoticSchedule
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
 
 
-        /*foreach ($period as $index=>$date){
-            $possibleDates->push($date);
-        }*/
         $period=collect($period->toArray());
         //TODO: either do the filtering on the CarbonPeriod or the collection. Doing on the CarbonPeriod might be far efficient
         $possibleDates=$period->filter(function (Carbon $date) use($daysOfTheWeek){
@@ -195,8 +205,8 @@ class ChaoticSchedule
 
 
         if(!empty($closure)){
-            $randomMOTD=$closure($possibleDates,$schedule);//I'm still not sure whether we should pass $possibleDates or $designatedRuns to the closure.
-            $this->validateClosureResponse($randomMOTD,'object');//Collection of dates expected
+            $possibleDates=$closure($possibleDates,$schedule);//I'm still not sure whether we should pass $possibleDates or $designatedRuns to the closure.
+            $this->validateClosureResponse($possibleDates,'object');//Collection of dates expected
         }
 
 
@@ -204,7 +214,6 @@ class ChaoticSchedule
 
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
-            //$designatedRun=$possibleDates->random();//TODO: this breaks the pRNG contract, this is not pseudo random and certainly not bound to seed. Fix it.
             $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
             $designatedRun=$possibleDates->get($randomIndex);
             $designatedRuns->push($designatedRun);
@@ -254,11 +263,6 @@ class ChaoticSchedule
 
             $schedule=$this->scheduleToDate($schedule,$bogusDate);
         }
-
-
-
-
-        //WIP!!
 
         return $schedule;
     }

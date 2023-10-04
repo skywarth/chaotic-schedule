@@ -20,16 +20,6 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 {
 
-    protected const AllDOW=[//days of week
-        Carbon::MONDAY,
-        Carbon::TUESDAY,
-        Carbon::WEDNESDAY,
-        Carbon::THURSDAY,
-        Carbon::FRIDAY,
-        Carbon::SATURDAY,
-        Carbon::SUNDAY,
-    ];
-
 
     protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug,bool $consistencyTest=false){
 
@@ -76,7 +66,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $periodType=RandomDateScheduleBasis::WEEK;
         $timesMin=4;
         $timesMax=4;
-        $daysOfWeek=self::AllDOW;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
 
     }
@@ -111,7 +101,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $periodType=RandomDateScheduleBasis::WEEK;
         $timesMin=2;
         $timesMax=5;
-        $daysOfWeek=self::AllDOW;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
 
     }
@@ -131,7 +121,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $periodType=RandomDateScheduleBasis::MONTH;
         $timesMin=7;
         $timesMax=7;
-        $daysOfWeek=self::AllDOW;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
@@ -153,7 +143,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $periodType=RandomDateScheduleBasis::MONTH;
         $timesMin=10;
         $timesMax=25;
-        $daysOfWeek=self::AllDOW;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
@@ -180,9 +170,39 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
-        $timesMin=100;
-        $timesMax=100;
-        $daysOfWeek=self::AllDOW;
+        $timesMin=50;
+        $timesMax=50;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+    }
+
+    public function test_year_basis_selective_DOW_exact_times()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::YEAR;
+        $timesMin=6;
+        $timesMax=6;
+        $daysOfWeek=[Carbon::WEDNESDAY,Carbon::THURSDAY,Carbon::SUNDAY];
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_year_basis_all_DOW_random_times()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::YEAR;
+        $timesMin=7;
+        $timesMax=33;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_year_basis_selective_DOW_random_times()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::YEAR;
+        $timesMin=0;
+        $timesMax=22;
+        $daysOfWeek=[Carbon::MONDAY];
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
