@@ -11,6 +11,7 @@ use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
+use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
@@ -212,14 +213,48 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
      */
 
 
-    /*public function test_times_max_exceeds_possible_runs()
+    public function test_month_basis_times_max_exceeds_possible_runs()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::MONTH;
         $timesMin=0;
-        $timesMax=22;
+        $timesMax=20;//Max possible here is actually `9`
         $daysOfWeek=[Carbon::MONDAY,Carbon::SUNDAY];
-        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,1,1,'mersenne-twister');
-    }*/
+        $this->expectException(RunTimesExpectationCannotBeMet::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+    }
 
+    public function test_month_basis_all_DOW_times_max_exceeds_possible_runs()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=0;
+        $timesMax=32;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+        $this->expectException(RunTimesExpectationCannotBeMet::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_week_basis_times_max_exceeds_possible_runs()
+    {
+        $nowMock=Carbon::createFromDate(2023,10,11);
+        $periodType=RandomDateScheduleBasis::WEEK;
+        $timesMin=0;
+        $timesMax=2;//Because there is only 1 thursday in a week, duh.
+        $daysOfWeek=[Carbon::THURSDAY];
+        $this->expectException(RunTimesExpectationCannotBeMet::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+
+    public function test_year_basis_times_max_exceeds_possible_runs()
+    {
+        $nowMock=Carbon::createFromDate(2023,10,11);
+        $periodType=RandomDateScheduleBasis::YEAR;
+        $timesMin=0;
+        $timesMax=200;
+        $daysOfWeek=[Carbon::THURSDAY,Carbon::FRIDAY,Carbon::SUNDAY];
+        $this->expectException(RunTimesExpectationCannotBeMet::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+    }
 }

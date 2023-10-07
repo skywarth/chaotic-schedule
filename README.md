@@ -41,32 +41,32 @@ It's a laravel package in development.
   - [X] Closure parameters for adjustments and flexibility
   - [X] Determine and indicate boundary inclusivity
 - [ ] Date based macros
-  - Create an array of the designated days of the week to be selected from.
+  - [X] (Changed a bit) Create an array of the designated days of the week to be selected from.
     Shuffle this array using RNG.
     Based on the requirement (like 2 times a week or 6 times a month), slice the array to get the required number of days.
     Return the selected days.
   - It should enable the following scenarios (times in the following only define date/day based times! It doesn't take time/minute into account.)
-    - Once a week, any day of the week
-    - Once a week, among wednesday and friday
+    - [X] Once a week, any day of the week
+    - [X] Once a week, among wednesday and friday
       - Example: It'll run wednesday this week. (Basically you roll dice each week)
-    - Twice a week, among thursday, saturday and monday.
+    - [X] Twice a week, among thursday, saturday and monday.
       - Example: It'll run thursday and monday this week
       - Example: It'll run saturday and monday this week
-    - 1-3 times this week, on tuesday, wednesday and friday **(need validation so that the times doesn't exceed max possible days)**
+    - [X] 1-3 times this week, on tuesday, wednesday and friday **(need validation so that the times doesn't exceed max possible days)**
       - Example: this week it'll run 2 times, on tuesday and wednesday
       - Example: this week it'll run once, on friday.
-    - 2-7 times this week, on any day of the week
+    - [X] 2-7 times this week, on any day of the week
       - Example: this week it'll run 5 times on [...]
-    - Once a month, on any day of the week
+    - [X] Once a month, on any day of the week
     - 4 times a month, on only odd number of the day of the month (3,7,17,23)
-    - 10-20 times a month, on monday, wednesday, thursday and saturday
-    - 30 times a year, on monday and wednesday.
+    - [X] 10-20 times a month, on monday, wednesday, thursday and saturday
+    - [X] 30 times a year, on monday and wednesday.
     - This one is not easy: 10 times a year, on saturday and sunday, runs should have a buffer span of at least 4 weeks. So it would run at the minimum per 4 weeks.
-  - So here's the gatherings so far, analysis:
-    - `period` context. Week, month, year...
-    - Constraints and limitations: `days of the week` (separate param), `buffer` (Separate param? .what should be the minimum diff between designated runs) ,others (such as running only on odd number days) can be handled via closures hopefully  
-    - There is `times`, defining how many times it should run for the given `period`. It is not related at all with random time schedules.
-    - `times` should be validated to not exceed max possible runs for the given `period` and constraints (day of the weeks etc)
+  - [X] So here's the gatherings so far, analysis:
+    - [X] `period` context. Week, month, year...
+    - [X] Constraints and limitations: `days of the week` (separate param), `buffer` (Separate param? .what should be the minimum diff between designated runs) ,others (such as running only on odd number days) can be handled via closures hopefully  
+    - [X] There is `times`, defining how many times it should run for the given `period`. It is not related at all with random time schedules.
+    - [X] `times` should be validated to not exceed max possible runs for the given `period` and constraints (day of the weeks etc)
   - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
   - [ ] Random for `->weeklyOn(1, '8:00');`
   - [ ] Random for `->monthlyOn(1, '8:00');`
