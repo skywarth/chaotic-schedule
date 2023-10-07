@@ -14,6 +14,7 @@ use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
+use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 
@@ -208,6 +209,14 @@ class ChaoticSchedule
             $possibleDates=$closure($possibleDates,$schedule);//I'm still not sure whether we should pass $possibleDates or $designatedRuns to the closure.
             $this->validateClosureResponse($possibleDates,'object');//Collection of dates expected
         }
+
+
+
+        if($possibleDates->count()<$timesMax){
+            //TODO: this is not effective currently, fix it
+            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be met since there isn't that many days for the given period and constraints.");
+        }
+
 
 
 

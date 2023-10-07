@@ -12,6 +12,13 @@ class RandomDateScheduleBasis
     const YEAR=30;
 
 
+    private const DAYS_PER_PERIOD=[
+      self::WEEK=>7,
+      self::MONTH=>30,
+      self::YEAR=>365,
+    ];
+
+
     /**
      * @throws InvalidScheduleBasisProvided
      */
@@ -35,6 +42,11 @@ class RandomDateScheduleBasis
 
     public static function getString(int $enumVal):string{
         return array_flip(self::getAll())[$enumVal];
+    }
+
+    public static function getDayCount(int $enumVal):int{
+        self::validate($enumVal);;
+        return self::DAYS_PER_PERIOD[$enumVal];
     }
 
 }

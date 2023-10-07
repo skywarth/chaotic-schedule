@@ -206,4 +206,20 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
+
+    /*
+     * -----------------------------------------------------------------------------------------------------------------
+     */
+
+
+    /*public function test_times_max_exceeds_possible_runs()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=0;
+        $timesMax=22;
+        $daysOfWeek=[Carbon::MONDAY,Carbon::SUNDAY];
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,1,1,'mersenne-twister');
+    }*/
+
 }
