@@ -154,7 +154,7 @@ class ChaoticSchedule
      * @throws InvalidScheduleBasisProvided
      * @throws IncompatibleClosureResponse
      */
-    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null):Event{
+    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
         if(empty($daysOfTheWeek)){
             $daysOfTheWeek=self::ALL_DOW;
         }else{
@@ -201,7 +201,8 @@ class ChaoticSchedule
         $possibleDates=$period->filter(function (Carbon $date) use($daysOfTheWeek){
             //filter based on designated $daysOfTheWeek and MAYBE closure
             return in_array($date->dayOfWeek,$daysOfTheWeek);
-        })->values();//values() is for reindexing, so the keys are sure to be consecutive integers
+        });//values() is for reindexing, so the keys are sure to be consecutive integers
+
 
 
 
@@ -210,9 +211,12 @@ class ChaoticSchedule
             $this->validateClosureResponse($possibleDates,'object');//Collection of dates expected
         }
 
+        $possibleDates=$possibleDates->values();
+
 
         if($possibleDates->count()<$timesMax){
-            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many days for the given period and constraints.");
+            $possibleDateCount=$possibleDates->count();
+            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many (only $possibleDateCount available) for the given period and constraints.");
         }
 
 

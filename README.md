@@ -58,7 +58,7 @@ It's a laravel package in development.
     - [X] 2-7 times this week, on any day of the week
       - Example: this week it'll run 5 times on [...]
     - [X] Once a month, on any day of the week
-    - 4 times a month, on only odd number of the day of the month (3,7,17,23)
+    - [X] 4 times a month, on only odd number of the day of the month (3,7,17,23)
     - [X] 10-20 times a month, on monday, wednesday, thursday and saturday
     - [X] 30 times a year, on monday and wednesday.
     - This one is not easy: 10 times a year, on saturday and sunday, runs should have a buffer span of at least 4 weeks. So it would run at the minimum per 4 weeks.

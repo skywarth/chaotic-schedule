@@ -22,7 +22,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 {
 
 
-    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug,bool $consistencyTest=false){
+    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug, ?callable $closure=null):Collection{
 
         //assertion
         $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
@@ -31,7 +31,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
 
 
-        $runsCounter=0;
+        $runDates=collect();
         foreach ($period as $index=>$date){
             $schedule = new Schedule();
             $schedule=$schedule->command('test');
@@ -39,14 +39,14 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
                 new SeedGenerationService($date),
                 new RNGFactory($rngEngineSlug)
             );
-            $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,$timesMin,$timesMax);
+            $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,$timesMin,$timesMax,null,$closure);
 
 
 
             Carbon::setTestNow($date); //Mock carbon now for Laravel event
             if($schedule->isDue(app())){
 
-                $runsCounter++;
+                $runDates->push($date);
 
                 $this->assertTrue($date->isBetween($periodBegin,$periodEnd),'Generated random run date is not in the range');
                 $this->assertContains($date->dayOfWeek,$daysOfWeek);
@@ -55,8 +55,9 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
             Carbon::setTestNow();//resetting the carbon::now to original
         }
 
-        $this->assertGreaterThanOrEqual($timesMin,$runsCounter);
-        $this->assertLessThanOrEqual($timesMax,$runsCounter);
+        $this->assertGreaterThanOrEqual($timesMin,$runDates->count());
+        $this->assertLessThanOrEqual($timesMax,$runDates->count());
+        return $runDates;
     }
 
 
@@ -156,6 +157,25 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $timesMax=9;
         $daysOfWeek=[Carbon::THURSDAY,Carbon::TUESDAY,Carbon::SATURDAY];
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_month_basis_selective_DOW_random_times_only_odd_Days()
+    {
+        $nowMock=Carbon::createFromDate(2017,04,07);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=0;
+        $timesMax=4;
+        $daysOfWeek=[Carbon::THURSDAY,Carbon::TUESDAY,Carbon::SATURDAY];
+        $closure=function (Collection $dates){
+              return $dates->filter(function (Carbon $date){
+                  return $date->day%2!==0;//odd numbered days only
+              });
+        };
+        $runDates=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring',$closure);
+        $nonOddNumberDayRuns=$runDates->filter(function (Carbon $date){
+            return $date->day%2===0;
+        });
+        $this->assertEmpty($nonOddNumberDayRuns);
     }
 
 
