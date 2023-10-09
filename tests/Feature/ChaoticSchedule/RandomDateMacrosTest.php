@@ -227,6 +227,28 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
+    public function test_year_basis_selective_DOW_exact_times_buffer_via_closure()
+    {
+        $nowMock=Carbon::createFromDate(2019,07,02);
+        $periodType=RandomDateScheduleBasis::YEAR;
+        $timesMin=13;
+        $timesMax=13;
+        $daysOfWeek=[Carbon::SATURDAY,Carbon::SUNDAY];
+        $closure=function (Collection $runDates){
+            $latestDate=null;
+          return $runDates->filter(function (Carbon $date) use (&$latestDate){
+                 if(empty($latestDate) || $date->diffInWeeks($latestDate)>=4){
+                     $latestDate=$date;
+                     return true;
+                 }else{
+                     return false;
+                 }
+          });
+        };
+        $runDates=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring',$closure);
+        dd($runDates);
+    }
+
 
     /*
      * -----------------------------------------------------------------------------------------------------------------
