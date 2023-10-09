@@ -231,13 +231,20 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
-        $timesMin=13;
-        $timesMax=13;
+        $timesMin=10;
+        $timesMax=10;
         $daysOfWeek=[Carbon::SATURDAY,Carbon::SUNDAY];
-        $closure=function (Collection $runDates){
+
+        $bufferWeeks=4;
+
+
+        //Some example case of applying buffer via ruling out those that don't fall outside the buffer
+        $closure=function (Collection $runDates) use ($bufferWeeks){
             $latestDate=null;
-          return $runDates->filter(function (Carbon $date) use (&$latestDate){
-                 if(empty($latestDate) || $date->diffInWeeks($latestDate)>=4){
+          return $runDates->sortBy(function (Carbon $date){
+              return $date->timestamp;
+          })->filter(function (Carbon $date) use (&$latestDate,$bufferWeeks){
+                 if(empty($latestDate) || $date->diffInWeeks($latestDate)>=$bufferWeeks){
                      $latestDate=$date;
                      return true;
                  }else{
@@ -246,7 +253,17 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
           });
         };
         $runDates=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring',$closure);
-        dd($runDates);
+
+        //assertion
+        $lastDate=null;
+        foreach ($runDates as $runDate){
+            if(!empty($lastDate)){
+                $diffInWeeks=$runDate->diffInWeeks($lastDate);
+                $this->assertTrue($diffInWeeks>=$bufferWeeks);
+            }
+
+            $lastDate=$runDate;
+        }
     }
 
 

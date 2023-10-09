@@ -216,7 +216,7 @@ class ChaoticSchedule
 
         if($possibleDates->count()<$timesMax){
             $possibleDateCount=$possibleDates->count();
-            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many (only $possibleDateCount available) for the given period and constraints.");
+            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many (only $possibleDateCount available) for the given period and constraints. Please check your closure, day of the week and period parameters.");
         }
 
 
