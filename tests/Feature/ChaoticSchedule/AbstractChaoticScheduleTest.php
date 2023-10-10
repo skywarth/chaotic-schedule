@@ -28,12 +28,12 @@ abstract class AbstractChaoticScheduleTest extends TestCase
         return self::$chaoticSchedule;
     }
 
-    protected const DefaultRNGEngineSlug='mersenne-twister';
+    protected const DEFAULT_RNG_ENGINE_SLUG='mersenne-twister';
 
 
     protected function generateRandomTimeConsecutiveDays(
         int $daysCount,
-        string $rngEngineSlug=self::DefaultRNGEngineSlug,
+        string $rngEngineSlug=self::DEFAULT_RNG_ENGINE_SLUG,
         string $minTime='06:18',
         string $maxTime='19:42'
     ):Collection{

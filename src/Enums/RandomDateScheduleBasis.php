@@ -6,10 +6,10 @@ use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
 
 class RandomDateScheduleBasis
 {
-    const WEEK=10;
-    const MONTH=20;
+    public const WEEK=10;
+    public const MONTH=20;
 
-    const YEAR=30;
+    public const YEAR=30;
 
 
     private const DAYS_PER_PERIOD=[

@@ -40,7 +40,7 @@ class SeedGenerationServiceTest extends TestCase
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );
-        $this->getServiceInstance()->setBasisDate(Carbon::now()->addDay(3));
+        $this->getServiceInstance()->setBasisDate(Carbon::now()->addDays(3));
         $seeds->push(
             $this->getServiceInstance()->seedForDay($id)
         );

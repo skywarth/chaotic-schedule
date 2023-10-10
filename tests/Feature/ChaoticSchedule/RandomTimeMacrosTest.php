@@ -164,7 +164,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
         $schedules=$this->generateRandomTimeConsecutiveDays(
             100,
-            self::DefaultRNGEngineSlug,
+            self::DEFAULT_RNG_ENGINE_SLUG,
             $min->format('H:i'),
             $max->format('H:i')
         );

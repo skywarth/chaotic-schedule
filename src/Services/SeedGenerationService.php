@@ -7,8 +7,8 @@ use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 
 class SeedGenerationService
 {
-    const SEED_LENGTH=16;//Because 'Seed Spring' RNG requires 16 byte integer. Maybe we may move padding to adapters if this alternates greatly between RNGs
-    const PADDING_STRING='0';
+    public const SEED_LENGTH=16;//Because 'Seed Spring' RNG requires 16 byte integer. Maybe we may move padding to adapters if this alternates greatly between RNGs
+    public const PADDING_STRING='0';
 
 
     private Carbon $basisDate;

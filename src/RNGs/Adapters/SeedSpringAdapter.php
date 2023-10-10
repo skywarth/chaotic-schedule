@@ -8,7 +8,7 @@ use ParagonIE\SeedSpring\SeedSpring;
 class SeedSpringAdapter extends AbstractRNGAdapter
 {
 
-    const PROVIDER_SEED_BYTES=16;
+    public const PROVIDER_SEED_BYTES=16;
     private SeedSpring $seedSpring;
 
 
