@@ -185,7 +185,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     public function test_random_time_distribution_homogeneity_chi_squared()
     {
 
-        $schedules=$this->generateRandomTimeConsecutiveDays(80);//TODO: Increase this
+        $schedules=$this->generateRandomTimeConsecutiveDays(80);//increase maybe
         $designatedRuns=$schedules->map(function (Event $schedule){
             return $schedule->nextRunDate();
         });
@@ -215,7 +215,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
     public function test_random_time_distribution_homogeneity_by_entropy()
     {
-        $thresholdPercentage=90;//percentage based, between 0 and 100. //TODO: maybe 95%
+        $thresholdPercentage=90;//percentage based, between 0 and 100. maybe 95%
         $samplingSize=100;
 
 
