@@ -5,6 +5,8 @@
 [![DeepSource](https://app.deepsource.com/gh/skywarth/chaotic-schedule.svg/?label=active+issues&show_trend=true&token=klpu6ClKPxNZm4A8fTPx8fJU)](https://app.deepsource.com/gh/skywarth/chaotic-schedule/?ref=repository-badge)
 [![DeepSource](https://app.deepsource.com/gh/skywarth/chaotic-schedule.svg/?label=resolved+issues&show_trend=true&token=klpu6ClKPxNZm4A8fTPx8fJU)](https://app.deepsource.com/gh/skywarth/chaotic-schedule/?ref=repository-badge)
 
+Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
+
 It's a laravel package in development.
 
 

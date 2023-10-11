@@ -21,8 +21,15 @@ use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 class ChaoticSchedule
 {
 
+    /**
+     * @var RandomNumberGeneratorAdapter
+     */
     private RandomNumberGeneratorAdapter $rng;
+    /**
+     * @var SeedGenerationService
+     */
     private SeedGenerationService $seeder;
+
 
     public const ALL_DOW=[
         Carbon::MONDAY,
@@ -34,6 +41,11 @@ class ChaoticSchedule
         Carbon::SUNDAY,
     ];
 
+
+    /**
+     * @param SeedGenerationService $seeder
+     * @param RNGFactory $factory
+     */
     public function __construct(SeedGenerationService $seeder, RNGFactory $factory)
     {
         //$this->seeder=app()->make(SeedGenerationService::class);
@@ -45,6 +57,9 @@ class ChaoticSchedule
     }
 
 
+    /**
+     * @return Carbon
+     */
     public function getBasisDate():Carbon{
         return $this->seeder->getBasisDate();//maybe add clone as well ?
     }
@@ -61,7 +76,12 @@ class ChaoticSchedule
         }
     }
 
-    private function scheduleToDate(Event $schedule,Carbon $date):Event{
+    /**
+     * @param Event $schedule
+     * @param Carbon $date
+     * @return Event
+     */
+    private function scheduleToDate(Event $schedule, Carbon $date):Event{
         $day = $date->day;
         $month = $date->month;
 
@@ -152,7 +172,7 @@ class ChaoticSchedule
     /**
      * @throws IncorrectRangeException
      * @throws InvalidScheduleBasisProvided
-     * @throws IncompatibleClosureResponse
+     * @throws IncompatibleClosureResponse|RunTimesExpectationCannotBeMet
      */
     public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
         if(empty($daysOfTheWeek)){
@@ -295,8 +315,12 @@ class ChaoticSchedule
     }
 
 
-
-    protected function getScheduleIdentifier(Event $schedule,?string $uniqueIdentifier=null):string{
+    /**
+     * @param Event $schedule
+     * @param string|null $uniqueIdentifier
+     * @return string
+     */
+    protected function getScheduleIdentifier(Event $schedule, ?string $uniqueIdentifier=null):string{
         if(empty($uniqueIdentifier)){
             $exploded=explode(' ',$schedule->command);
             $uniqueIdentifier=$exploded[count($exploded)-1];
@@ -318,6 +342,9 @@ class ChaoticSchedule
 
     */
     //TODO: maybe move this section to service provider
+    /**
+     * @return void
+     */
     public function registerMacros(){
         $this->registerAtRandomMacro();
         $this->registerHourlyAtRandomMacro();
@@ -326,6 +353,9 @@ class ChaoticSchedule
         $this->registerRandomDaysMacro();
     }
 
+    /**
+     * @return void
+     */
     private function registerAtRandomMacro(){
         $chaoticSchedule=$this;
         Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
@@ -336,6 +366,9 @@ class ChaoticSchedule
         });
     }
 
+    /**
+     * @return void
+     */
     private function registerDailyAtRandomRandomMacro(){
         $chaoticSchedule=$this;
         Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
@@ -346,6 +379,9 @@ class ChaoticSchedule
         });
     }
 
+    /**
+     * @return void
+     */
     private function registerHourlyAtRandomMacro(){
         $chaoticSchedule=$this;
         Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
@@ -357,6 +393,9 @@ class ChaoticSchedule
     }
 
 
+    /**
+     * @return void
+     */
     private function registerRandomDaysMacro(){
         $chaoticSchedule=$this;
         Event::macro('randomDays', function (int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null) use($chaoticSchedule){
