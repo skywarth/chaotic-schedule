@@ -43,8 +43,9 @@ class ChaoticSchedule
 
 
     /**
-     * @param SeedGenerationService $seeder
-     * @param RNGFactory $factory
+     * Usually these parameters are resolved via dependency injection from Laravel Service Container
+     * @param SeedGenerationService $seeder SeedGenerationService instance
+     * @param RNGFactory $factory RNGFactory instance
      */
     public function __construct(SeedGenerationService $seeder, RNGFactory $factory)
     {
@@ -68,7 +69,7 @@ class ChaoticSchedule
     /**
      * @throws IncompatibleClosureResponse
      */
-    private function validateClosureResponse($closureResponse, $expected){
+    private function validateClosureResponse($closureResponse, string $expected){
         //TODO: expected should also be used as closure. Both applicable, closure and primitive types
         $type=gettype($closureResponse);
         if($type!==$expected){
@@ -78,7 +79,7 @@ class ChaoticSchedule
 
     /**
      * @param Event $schedule
-     * @param Carbon $date
+     * @param Carbon $date Designated date to run the Schedule/Event instance at
      * @return Event
      */
     private function scheduleToDate(Event $schedule, Carbon $date):Event{

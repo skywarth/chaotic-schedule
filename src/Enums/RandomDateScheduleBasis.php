@@ -41,11 +41,12 @@ class RandomDateScheduleBasis
     }
 
     public static function getString(int $enumVal):string{
+        self::validate($enumVal);
         return array_flip(self::getAll())[$enumVal];
     }
 
     public static function getDayCount(int $enumVal):int{
-        self::validate($enumVal);;
+        self::validate($enumVal);
         return self::DAYS_PER_PERIOD[$enumVal];
     }
 

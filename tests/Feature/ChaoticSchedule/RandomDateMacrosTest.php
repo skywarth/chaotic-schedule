@@ -7,16 +7,20 @@ use Carbon\CarbonPeriod;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
+use LogicException;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
+use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
 use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
 use Skywarth\ChaoticSchedule\Services\SeedGenerationService;
 use Skywarth\ChaoticSchedule\Tests\TestCase;
+use TypeError;
 
 class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 {
@@ -316,4 +320,85 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->expectException(RunTimesExpectationCannotBeMet::class);
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
+
+    public function test_invalid_closure_return_type()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=RandomDateScheduleBasis::WEEK;
+        $timesMin=0;
+        $timesMax=2;
+        $daysOfWeek=[Carbon::THURSDAY,Carbon::FRIDAY,Carbon::SUNDAY];
+        $closure=function (Collection $dates){
+              return false;
+        };
+        $this->expectException(IncompatibleClosureResponse::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister',$closure);
+    }
+
+    public function test_invalid_times_values()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=-5;
+        $timesMax=10;
+        $daysOfWeek=[];
+        $this->expectException(LogicException::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_invalid_times_range()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=10;
+        $timesMax=5;
+        $daysOfWeek=[];
+        $this->expectException(IncorrectRangeException::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_invalid_DOW_parameter_type()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=0;
+        $timesMax=3;
+        $daysOfWeek=Carbon::SATURDAY;
+        $this->expectException(TypeError::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_invalid_DOW_values()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=0;
+        $timesMax=10;
+        $daysOfWeek=[Carbon::TUESDAY,'sunday','monday'];
+        $this->expectException(InvalidArgumentException::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_invalid_period_type_parameter_type()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType='weekly';
+        $timesMin=4;
+        $timesMax=4;
+        $daysOfWeek=[];
+        $this->expectException(TypeError::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+    public function test_invalid_period_type_value()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=50;
+        $timesMin=4;
+        $timesMax=4;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+        $this->expectException(InvalidScheduleBasisProvided::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
 }

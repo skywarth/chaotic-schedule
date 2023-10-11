@@ -25,7 +25,6 @@ It's a laravel package in development.
 
 ## TODOs
 
-- [ ] PHPDoc comments for methods and classes
 - [X] ~~Problem: These damned PRNG doesn't work well with massive seed values.~~
   - [X] ~~Abstract class for RNG adapters to enforce seed format (size, type, etc.)~~
   - [X] ~~New hashing solution for steady flow of seeds (on SeedGenerationService).~~
@@ -75,6 +74,7 @@ It's a laravel package in development.
 - [ ] Indicating next runs dates. Either via overriding `schedule:list` or defining a custom command which works specifically for commands that use our macros.
   - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
+- [ ] PHPDoc comments for methods and classes
 - [ ] Unit tests
   - [X] Time based methods and macros
     - [X] Macro registration assertion
@@ -85,4 +85,9 @@ It's a laravel package in development.
       - [X] On RNGAdapter
       - [X] On macros
     - [X] Closures
-
+  - [ ] Date based methods and macros
+    - [X] Macro registration assertion
+    - [ ] Consistency of generated randoms based on seed
+    - [ ] Unique identifier (parameter and auto)
+    - [X] Invalid params (out of range, min-max order, format)
+    - [ ] Closures
