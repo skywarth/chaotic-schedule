@@ -13,7 +13,7 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 
 class ChaoticScheduleServiceProviderTest extends TestCase
 {
-    public function test_chaotic_schedule_service_binding()
+    public function testChaoticScheduleServiceBinding()
     {
         $chaoticSchedule=app(ChaoticSchedule::class);
         $bound=$this->app->bound(ChaoticSchedule::class);
@@ -22,7 +22,7 @@ class ChaoticScheduleServiceProviderTest extends TestCase
 
     }
 
-    public function test_chaotic_schedule_time_based_macro_registration()
+    public function testChaoticScheduleTimeBasedMacroRegistration()
     {
         $this->assertTrue(Event::hasMacro('atRandom'));
         $this->assertTrue(Event::hasMacro('dailyAtRandom'));

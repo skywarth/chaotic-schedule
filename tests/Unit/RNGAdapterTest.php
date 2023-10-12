@@ -15,7 +15,7 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 class RNGAdapterTest extends TestCase
 {
 
-    public function test_initialization_with_seed()
+    public function testInitializationWithSeed()
     {
         $initialSeed=1550;
         $adapter=new MersenneTwisterAdapter($initialSeed);
@@ -24,7 +24,7 @@ class RNGAdapterTest extends TestCase
 
     }
 
-    public function test_throws_exception_when_seed_is_missing()
+    public function testThrowsExceptionWhenSeedIsMissing()
     {
         $adapter=new MersenneTwisterAdapter();
         $this->expectException(MissingSeedException::class);
@@ -32,14 +32,14 @@ class RNGAdapterTest extends TestCase
 
     }
 
-    public function test_seed_validation_exception()
+    public function testSeedValidationException()
     {
         $adapter=new SeedSpringAdapter();
         $this->expectException(InvalidSeedFormatException::class);
         $adapter->setSeed(123);
     }
 
-    public function test_intBetween_boundary_parameters_are_inclusive()
+    public function testIntBetweenBoundaryParametersAreInclusive()
     {
         $adapter=new SeedSpringAdapter(3434834333333984);
         $rnd1=$adapter->intBetween(5,5);

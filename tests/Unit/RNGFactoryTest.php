@@ -12,7 +12,7 @@ use UnexpectedValueException;
 class RNGFactoryTest extends TestCase
 {
 
-    public function test_provides_valid_adapter()
+    public function testProvidesValidAdapter()
     {
         $factory=new RNGFactory('mersenne-twister');
         $adapter=$factory->getRngEngine();
@@ -20,7 +20,7 @@ class RNGFactoryTest extends TestCase
 
     }
 
-    public function test_provides_different_adapter_per_slug()
+    public function testProvidesDifferentAdapterPerSlug()
     {
         $factory1=new RNGFactory('mersenne-twister');
         $adapter1=$factory1->getRngEngine();
@@ -31,7 +31,7 @@ class RNGFactoryTest extends TestCase
 
     }
 
-    public function test_throws_exception_on_invalid_adapter_slug()
+    public function testThrowsExceptionOnInvalidAdapterSlug()
     {
         $factory=new RNGFactory('this_adapter_doesnt_exist');
         $this->expectException(UnexpectedValueException::class);

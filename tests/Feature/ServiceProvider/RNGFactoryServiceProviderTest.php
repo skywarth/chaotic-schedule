@@ -12,7 +12,7 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 
 class RNGFactoryServiceProviderTest extends TestCase
 {
-    public function test_rng_factory_service_binding()
+    public function testRngFactoryServiceBinding()
     {
         $rngFactory=app(RNGFactory::class);
         $bound=$this->app->bound(RNGFactory::class);
@@ -21,7 +21,7 @@ class RNGFactoryServiceProviderTest extends TestCase
 
     }
 
-    public function test_rng_factory_depends_on_config()
+    public function testRngFactoryDependsOnConfig()
     {
         $this->setConfigActiveSlug('mersenne-twister');
         $rngFactoryMersenne=app(RNGFactory::class);
@@ -31,7 +31,7 @@ class RNGFactoryServiceProviderTest extends TestCase
         //Maybe reset config afterwards ?
     }
 
-    public function test_rng_factory_override_slug_by_parameter()
+    public function testRngFactoryOverrideSlugByParameter()
     {
         $this->setConfigActiveSlug('mersenne-twister');
         $firstRngFactory=app(RNGFactory::class);

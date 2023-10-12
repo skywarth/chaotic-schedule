@@ -65,7 +65,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function test_week_basis_all_DOW_exact_times()
+    public function testWeekBasisAllDOWExactTimes()
     {
 
         $nowMock=Carbon::createFromDate(2023,6,01);//Thursday
@@ -79,7 +79,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
 
 
-    public function test_week_basis_selective_DOW_exact_times()
+    public function testWeekBasisSelectiveDOWExactTimes()
     {
         $nowMock=Carbon::createFromDate(2023,6,01);//Thursday
         $periodType=RandomDateScheduleBasis::WEEK;
@@ -90,7 +90,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
     }
 
-    public function test_week_basis_selective_DOW_random_times()
+    public function testWeekBasisSelectiveDowRandomTimes()
     {
         $nowMock=Carbon::createFromDate(2006,02,13);
         $periodType=RandomDateScheduleBasis::WEEK;
@@ -101,7 +101,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
     }
 
-    public function test_week_basis_all_DOW_random_times()
+    public function testWeekBasisAllDowRandomTimes()
     {
         $nowMock=Carbon::createFromDate(2011,12,31);
         $periodType=RandomDateScheduleBasis::WEEK;
@@ -121,7 +121,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         ██  ██  ██ ██    ██ ██  ██ ██    ██    ██   ██             ██   ██ ██   ██      ██ ██      ██
         ██      ██  ██████  ██   ████    ██    ██   ██             ██████  ██   ██ ███████ ██ ███████
      */
-    public function test_month_basis_all_DOW_exact_times()
+    public function testMonthBasisAllDowExactTimes()
     {
         $nowMock=Carbon::createFromDate(2018,03,22);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -132,7 +132,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function test_month_basis_selective_DOW_exact_times()
+    public function testMonthBasisSelectiveDowExactTimes()
     {
         $nowMock=Carbon::createFromDate(2018,03,22);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -143,7 +143,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function test_month_basis_all_DOW_random_times()
+    public function testMonthBasisAllDowRandomTimes()
     {
         $nowMock=Carbon::createFromDate(2015,06,25);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -153,7 +153,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_month_basis_selective_DOW_random_times()
+    public function testMonthBasisSelectiveDowRandomTimes()
     {
         $nowMock=Carbon::createFromDate(2022,10,01);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -163,7 +163,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_month_basis_selective_DOW_random_times_only_odd_Days()
+    public function testMonthBasisSelectiveDowRandomTimesOnlyOddDays()
     {
         $nowMock=Carbon::createFromDate(2017,04,07);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -191,7 +191,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         ██    ███████ ██   ██ ██   ██     ██████  ██   ██ ███████ ██ ███████
      */
 
-    public function test_year_basis_all_DOW_exact_times()
+    public function testYearBasisAllDowExactTimes()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
@@ -201,7 +201,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
-    public function test_year_basis_selective_DOW_exact_times()
+    public function testYearBasisSelectiveDowExactTimes()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
@@ -211,7 +211,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_year_basis_all_DOW_random_times()
+    public function testYearBasisAllDowRandomTimes()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
@@ -221,7 +221,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_year_basis_selective_DOW_random_times()
+    public function testYearBasisSelectiveDowRandomTimes()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
@@ -231,7 +231,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
-    public function test_year_basis_selective_DOW_exact_times_buffer_via_closure()
+    public function testYearBasisSelectiveDowExactTimesBufferViaClosure()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::YEAR;
@@ -276,7 +276,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
      */
 
 
-    public function test_month_basis_times_max_exceeds_possible_runs()
+    public function testMonthBasisTimesMaxExceedsPossibleRuns()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -287,7 +287,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
-    public function test_month_basis_all_DOW_times_max_exceeds_possible_runs()
+    public function testMonthBasisAllDowTimesMaxExceedsPossibleRuns()
     {
         $nowMock=Carbon::createFromDate(2019,07,02);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -298,7 +298,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_week_basis_times_max_exceeds_possible_runs()
+    public function testWeekBasisTimesMaxExceedsPossibleRuns()
     {
         $nowMock=Carbon::createFromDate(2023,10,11);
         $periodType=RandomDateScheduleBasis::WEEK;
@@ -310,7 +310,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function test_year_basis_times_max_exceeds_possible_runs()
+    public function testYearBasisTimesMaxExceedsPossibleRuns()
     {
         $nowMock=Carbon::createFromDate(2023,10,11);
         $periodType=RandomDateScheduleBasis::YEAR;
@@ -321,7 +321,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
     }
 
-    public function test_invalid_closure_return_type()
+    public function testInvalidClosureReturnType()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType=RandomDateScheduleBasis::WEEK;
@@ -335,7 +335,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister',$closure);
     }
 
-    public function test_invalid_times_values()
+    public function testInvalidTimesValues()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -346,7 +346,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_invalid_times_range()
+    public function testInvalidTimesRange()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -357,7 +357,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_invalid_DOW_parameter_type()
+    public function testInvalidDowParameterType()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -368,7 +368,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_invalid_DOW_values()
+    public function testInvalidDowValues()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType=RandomDateScheduleBasis::MONTH;
@@ -379,7 +379,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_invalid_period_type_parameter_type()
+    public function testInvalidPeriodTypeParameterType()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType='weekly';
@@ -390,7 +390,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
 
-    public function test_invalid_period_type_value()
+    public function testInvalidPeriodTypeValue()
     {
         $nowMock=Carbon::createFromDate(2020,8,9);
         $periodType=50;

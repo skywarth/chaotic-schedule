@@ -19,7 +19,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 {
 
 
-    public function test_random_time_incorrect_parameter_format_exception()
+    public function testRandomTimeIncorrectParameterFormatException()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
@@ -28,7 +28,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
     }
 
-    public function test_random_time_closure_param_even_numbers_only()
+    public function testRandomTimeClosureParamEvenNumbersOnly()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
@@ -49,7 +49,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
     }
 
-    public function test_random_time_closure_throws_incompatible_response()
+    public function testRandomTimeClosureThrowsIncompatibleResponse()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
@@ -59,7 +59,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         });
     }
 
-    public function test_random_time_incorrect_parameter_order_exception()
+    public function testRandomTimeIncorrectParameterOrderException()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
@@ -67,14 +67,14 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->getChaoticSchedule()->randomTimeSchedule($schedule,'18:00','09:00');
     }
 
-    public function test_random_minute_incorrect_parameter_format_exception()
+    public function testRandomMinuteIncorrectParameterFormatException()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(\OutOfRangeException::class);
         $this->getChaoticSchedule()->randomMinuteSchedule($schedule,-55,44);
     }
-    public function test_random_minute_incorrect_parameter_order_exception()
+    public function testRandomMinuteIncorrectParameterOrderException()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
@@ -82,7 +82,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->getChaoticSchedule()->randomMinuteSchedule($schedule,44,13);
     }
 
-    public function test_random_time_same_command_no_identifier_consistency()
+    public function testRandomTimeSameCommandNoIdentifierConsistency()
     {
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('test')->wednesdays();
@@ -94,7 +94,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertEquals(true,$datesEqual);
     }
 
-    public function test_random_time_same_command_custom_identifier_difference()
+    public function testRandomTimeSameCommandCustomIdentifierDifference()
     {
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('test')->wednesdays();
@@ -106,7 +106,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertEquals(true,$datesEqual);
     }
 
-    public function test_random_time_different_command_no_identifier_difference()
+    public function testRandomTimeDifferentCommandNoIdentifierDifference()
     {
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('foo')->wednesdays();
@@ -118,7 +118,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertEquals(true,$datesEqual);
     }
 
-    public function test_random_time_different_command_same_custom_identifier_consistency()
+    public function testRandomTimeDifferentCommandSameCustomIdentifierConsistency()
     {
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('foo')->wednesdays();
@@ -130,7 +130,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertEquals(true,$datesEqual);
     }
 
-    public function test_random_time_consistency_throughout_the_day()
+    public function testRandomTimeConsistencyThroughoutTheDay()
     {
 
         //$chaoticSchedule=$this->getChaoticSchedule();
@@ -156,7 +156,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function test_random_time_within_limits()
+    public function testRandomTimeWithinLimits()
     {
 
         $min=Carbon::createFromFormat('H:i','15:28');
@@ -182,7 +182,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
     }
 
-    public function test_random_time_distribution_homogeneity_chi_squared()
+    public function testRandomTimeDistributionHomogeneityChiSquared()
     {
 
         $schedules=$this->generateRandomTimeConsecutiveDays(80);//increase maybe
@@ -213,7 +213,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function test_random_time_distribution_homogeneity_by_entropy()
+    public function testRandomTimeDistributionHomogeneityByEntropy()
     {
         $thresholdPercentage=90;//percentage based, between 0 and 100. maybe 95%
         $samplingSize=100;

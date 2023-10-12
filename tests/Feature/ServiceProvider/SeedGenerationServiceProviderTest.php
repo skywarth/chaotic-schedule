@@ -16,7 +16,7 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 class SeedGenerationServiceProviderTest extends TestCase
 {
 
-    public function test_seed_generation_service_binding()
+    public function testSeedGenerationServiceBinding()
     {
         $seedGenerationService=app(SeedGenerationService::class);
         $bound=$this->app->bound(SeedGenerationService::class);

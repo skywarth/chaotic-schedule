@@ -17,14 +17,14 @@ class SeedGenerationServiceTest extends TestCase
         return $this->service;
     }
 
-    public function test_seed_for_day_same_identifier()
+    public function testSeedForDaySameIdentifier()
     {
         $identifier='my-unique-identifier';
 
         $this->assertSame($this->getServiceInstance()->seedForDay($identifier),$this->getServiceInstance()->seedForDay($identifier));
     }
 
-    public function test_seed_for_day_different_identifier()
+    public function testSeedForDayDifferentIdentifier()
     {
         $this->assertNotSame(
             $this->getServiceInstance()->seedForDay('dog'),
@@ -32,7 +32,7 @@ class SeedGenerationServiceTest extends TestCase
         );
     }
 
-    public function test_seed_for_day_differs_per_date()
+    public function testSeedForDayDiffersPerDate()
     {
         $seeds=collect();
         $id='test';
@@ -60,7 +60,7 @@ class SeedGenerationServiceTest extends TestCase
         $this->assertSame($seeds->toArray(),$seeds->unique()->toArray());
     }
 
-    public function test_seed_for_day_format(){
+    public function testSeedForDayFormat(){
 
         for($i=0;$i<30;$i++){
             $seed=$this->getServiceInstance()->seedForDay($i);
