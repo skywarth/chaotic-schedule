@@ -275,6 +275,15 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
      * -----------------------------------------------------------------------------------------------------------------
      */
 
+    /*
+
+    ███████ ██   ██  ██████ ███████ ██████  ████████ ██  ██████  ███    ██     ██   ██  █████  ███    ██ ██████  ██      ██ ███    ██  ██████
+    ██       ██ ██  ██      ██      ██   ██    ██    ██ ██    ██ ████   ██     ██   ██ ██   ██ ████   ██ ██   ██ ██      ██ ████   ██ ██
+    █████     ███   ██      █████   ██████     ██    ██ ██    ██ ██ ██  ██     ███████ ███████ ██ ██  ██ ██   ██ ██      ██ ██ ██  ██ ██   ███
+    ██       ██ ██  ██      ██      ██         ██    ██ ██    ██ ██  ██ ██     ██   ██ ██   ██ ██  ██ ██ ██   ██ ██      ██ ██  ██ ██ ██    ██
+    ███████ ██   ██  ██████ ███████ ██         ██    ██  ██████  ██   ████     ██   ██ ██   ██ ██   ████ ██████  ███████ ██ ██   ████  ██████
+
+     */
 
     public function testMonthBasisTimesMaxExceedsPossibleRuns()
     {
@@ -400,5 +409,67 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $this->expectException(InvalidScheduleBasisProvided::class);
         $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
     }
+
+    public function testImplicitlyInvalidDowValues()
+    {
+        $nowMock=Carbon::createFromDate(2020,8,9);
+        $periodType=RandomDateScheduleBasis::WEEK;
+        $timesMin=0;
+        $timesMax=2;
+        $daysOfWeek=[5,4,2,[1]];
+        $this->expectException(InvalidArgumentException::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+    }
+
+
+    /*
+     * -----------------------------------------------------------------------------------------------------------------
+     */
+
+    public function testRandomDateConsistencyForWeekBasis(){
+        $nowMock=Carbon::createFromDate(2023,02,13);
+        $periodType=RandomDateScheduleBasis::WEEK;
+        $timesMin=0;
+        $timesMax=6;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+        $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
+        $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
+
+        $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
+        $lastDesignatedRuns=null;
+        foreach ($period as $date){
+            $designatedRuns=$this->randomDateScheduleTestingBoilerplate($date,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+            if(!is_null($lastDesignatedRuns)){
+                $areIdentical = $designatedRuns->diff($lastDesignatedRuns)->isEmpty() && $lastDesignatedRuns->diff($designatedRuns)->isEmpty();
+                $this->assertTrue($areIdentical);
+            }
+            $lastDesignatedRuns=$designatedRuns;
+        }
+
+    }
+
+    public function testRandomDateConsistencyForMonthBasis(){
+        $nowMock=Carbon::createFromDate(2007,12,13);
+        $periodType=RandomDateScheduleBasis::MONTH;
+        $timesMin=7;
+        $timesMax=12;
+        $daysOfWeek=[Carbon::MONDAY,Carbon::TUESDAY,Carbon::FRIDAY,Carbon::SUNDAY];
+        $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
+        $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
+
+        $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
+        $lastDesignatedRuns=null;
+        foreach ($period as $date){
+            $designatedRuns=$this->randomDateScheduleTestingBoilerplate($date,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+            if(!is_null($lastDesignatedRuns)){
+                $areIdentical = $designatedRuns->diff($lastDesignatedRuns)->isEmpty() && $lastDesignatedRuns->diff($designatedRuns)->isEmpty();
+                $this->assertTrue($areIdentical);
+            }
+            $lastDesignatedRuns=$designatedRuns;
+        }
+
+    }
+
+
 
 }

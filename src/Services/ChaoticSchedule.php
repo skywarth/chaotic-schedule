@@ -181,6 +181,9 @@ class ChaoticSchedule
         }else{
             //Validate DOW
             foreach ($daysOfTheWeek as $dayNum){
+                if(gettype($dayNum)!=='integer'){
+                    throw new InvalidArgumentException('daysOfTheWeek contains non-integer value! It should contain only integer values which represent days of the week.');
+                }
                 if(!in_array($dayNum,self::ALL_DOW)){
                     throw new InvalidArgumentException("The number=$dayNum doesn't correspond to a day of the week number (Carbon).");
                 }
