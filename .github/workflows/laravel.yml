@@ -5,10 +5,12 @@ on:
     branches: [ "master" ]
     paths-ignore:
       - '**.md'
+      - '.deepsource.toml'
   pull_request:
     branches: [ "master" ]
     paths-ignore:
       - '**.md'
+      - '.deepsource.toml'
 
 jobs:
   laravel-tests:
