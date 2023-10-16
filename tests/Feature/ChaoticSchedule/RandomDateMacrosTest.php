@@ -26,7 +26,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 {
 
 
-    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug, ?callable $closure=null):Collection{
+    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug, ?callable $closure=null,?string $uniqueIdentifier=null):Collection{
 
         //assertion
         $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
@@ -43,7 +43,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
                 new SeedGenerationService($date),
                 new RNGFactory($rngEngineSlug)
             );
-            $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,$timesMin,$timesMax,null,$closure);
+            $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
 
 
@@ -460,7 +460,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
         $lastDesignatedRuns=null;
         foreach ($period as $date){
-            $designatedRuns=$this->randomDateScheduleTestingBoilerplate($date,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+            $designatedRuns=$this->randomDateScheduleTestingBoilerplate($date,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
             if(!is_null($lastDesignatedRuns)){
                 $areIdentical = $designatedRuns->diff($lastDesignatedRuns)->isEmpty() && $lastDesignatedRuns->diff($designatedRuns)->isEmpty();
                 $this->assertTrue($areIdentical);
@@ -470,6 +470,26 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
     }
 
+    public function testSameCommandCustomIdentifierDifference(){
+        $nowMock=Carbon::createFromDate(2023,02,13);
+        $periodType=RandomDateScheduleBasis::WEEK;
+        $timesMin=0;
+        $timesMax=6;
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+        $designatedRunsOriginal=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+        $designatedRunsYetAnotherOriginal=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister');
+        $designatedRunsCustomIdentifier=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister',null,'some-custom-identifier');
+        $designatedRunsYetAnotherCustomIdentifier=$this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'mersenne-twister',null,'some-custom-identifier');
+
+        $originalsAreIdentical = $designatedRunsOriginal->diff($designatedRunsYetAnotherOriginal)->isEmpty() && $designatedRunsYetAnotherOriginal->diff($designatedRunsOriginal)->isEmpty();
+        $this->assertTrue($originalsAreIdentical);
+
+        $customIdentifiersIdentical = $designatedRunsCustomIdentifier->diff($designatedRunsYetAnotherCustomIdentifier)->isEmpty() && $designatedRunsYetAnotherCustomIdentifier->diff($designatedRunsCustomIdentifier)->isEmpty();
+        $this->assertTrue($customIdentifiersIdentical);
+
+        $originalAndCustomIdentical=$designatedRunsOriginal->diff($designatedRunsCustomIdentifier)->isEmpty() && $designatedRunsCustomIdentifier->diff($designatedRunsOriginal)->isEmpty();
+        $this->assertFalse($originalAndCustomIdentical);
+    }
 
 
 }

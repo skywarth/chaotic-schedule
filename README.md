@@ -41,7 +41,7 @@ It's a laravel package in development.
       Config for this might be better. `->nextRunDate()` acts up for the `->daily()`.
   - [X] Closure parameters for adjustments and flexibility
   - [X] Determine and indicate boundary inclusivity
-- [ ] Date based macros
+- [X] Date based macros
   - [X] (Changed a bit) Create an array of the designated days of the week to be selected from.
     Shuffle this array using RNG.
     Based on the requirement (like 2 times a week or 6 times a month), slice the array to get the required number of days.
@@ -68,14 +68,11 @@ It's a laravel package in development.
     - [X] Constraints and limitations: `days of the week` (separate param), `buffer` (Separate param? .what should be the minimum diff between designated runs) ,others (such as running only on odd number days) can be handled via closures hopefully  
     - [X] There is `times`, defining how many times it should run for the given `period`. It is not related at all with random time schedules.
     - [X] `times` should be validated to not exceed max possible runs for the given `period` and constraints (day of the weeks etc)
-  - [ ] Random for `->days(Schedule::MONDAY,Schedule::WEDNESDAY,Schedule::FRIDAY)` 
-  - [ ] Random for `->weeklyOn(1, '8:00');`
-  - [ ] Random for `->monthlyOn(1, '8:00');`
 - [ ] Indicating next runs dates. Either via overriding `schedule:list` or defining a custom command which works specifically for commands that use our macros.
   - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
 - [ ] PHPDoc comments for methods and classes
-- [ ] Unit tests
+- [X] Unit/feature tests
   - [X] Time based methods and macros
     - [X] Macro registration assertion
     - [X] Consistency of generated randoms based on seed
@@ -85,9 +82,9 @@ It's a laravel package in development.
       - [X] On RNGAdapter
       - [X] On macros
     - [X] Closures
-  - [ ] Date based methods and macros
+  - [X] Date based methods and macros
     - [X] Macro registration assertion
-    - [ ] Consistency of generated randoms based on seed
-    - [ ] Unique identifier (parameter and auto)
+    - [X] Consistency of generated randoms based on seed
+    - [X] Unique identifier (parameter and auto)
     - [X] Invalid params (out of range, min-max order, format)
-    - [ ] Closures
+    - [X] Closures
