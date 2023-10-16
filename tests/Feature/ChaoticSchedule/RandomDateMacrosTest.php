@@ -29,7 +29,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
     protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug, ?callable $closure=null,?string $uniqueIdentifier=null):Collection{
 
         //assertion
-        $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
         $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
@@ -432,7 +432,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $timesMin=0;
         $timesMax=6;
         $daysOfWeek=ChaoticSchedule::ALL_DOW;
-        $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
         $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
@@ -454,7 +454,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $timesMin=7;
         $timesMax=12;
         $daysOfWeek=[Carbon::MONDAY,Carbon::TUESDAY,Carbon::FRIDAY,Carbon::SUNDAY];
-        $periodBegin=$nowMock->clone()->startof(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
         $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
