@@ -3,6 +3,9 @@ version = 1
 exclude_patterns = [
   "src/RNGs/MersenneTwister.php",
 ]
+test_patterns = \[
+  "tests/**",
+]
 
 [[analyzers]]
 name = "php"
