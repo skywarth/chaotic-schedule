@@ -36,6 +36,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
+        "php": ">=7.4",
         "paragonie/seedspring": "^1.2"
     }
 }
