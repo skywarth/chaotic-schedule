@@ -60,6 +60,62 @@ This Laravel packages enables you to run commands on random intervals and period
 <a name='documentation'></a>
 ## Documentation
 
+<a name='random-time-macros'></a>
+### Random Time Macros
+
+
+<a name='at-random'></a>
+#### 1. `->atRandom(string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null)`
+Used for scheduling your commands to run at random time of the day. 
+
+- Only designates random **run time**
+- Doesn't designate any date on the schedule. So you have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
+
+| Parameter          | Type                | Example Value                                                   | Description                                                                                                                                                                                                                                                   |
+|--------------------|---------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `minTime`          | string              | `'14:15'`                                                       | Minimum value for the random time range (inclusive)                                                                                                                                                                                                           |
+| `maxTime`          | string              | `'22:38'`                                                       | Maximum value for the random time range (inclusive)                                                                                                                                                                                                           |
+| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                        | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                     |
+| `closure`          | callable (nullable) | <pre>function(int $motd){<br><br>return $motd+5;<br>}<br></pre> | Optional closure to tweak the designated random minute of the day according to your needs. For example you may use this to run the command only on odd-numbered minutes. `int` minute of the day is injected and `int` response is expected from the closure. |
+
+- ##### Example usage #1
+
+Run a command daily on a random time between 08:15 and 11:42
+```php
+$schedule->command('your-command-signature:here')->daily()->atRandom('08:15','11:42');
+```
+
+- ##### Example usage #2
+
+Run a command every Tuesday, Saturday and Sunday on a random time between 04:20 and 06:09
+```php
+$schedule->command('your-command-signature:here')->days([Schedule::TUESDAY, Schedule::SATURDAY, Schedule::SUNDAY])->atRandom('04:20','06:09');
+```
+
+- ##### Example usage #3
+
+Run a command every Sunday between 16:00 - 17:00 and also on Monday between 09:00 - 12:00
+
+**Notice the unique identifier parameter**
+```php
+//Observe that the both schedules share the same command, but one has custom unique identifier
+$schedule->command('your-command-signature:here')->sundays()->atRandom('16:00','17:00');
+$schedule->command('your-command-signature:here')->sundays()->atRandom('16:00','17:00','this-is-special');
+//Since the latter has a unique identifier, it has a distinguished seed which completely differentiates the generated randoms.
+```
+
+#### 2. `->dailyAtRandom(string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null)`
+
+Identical to [atRandom](#at-random) macro. Just a different name.
+
+#### 3. `->hourlyAtRandom(int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null)`
+
+WIP!
+
+---
+
+<a name='random-date-macros'></a>
+### Random Date Macros 
 
 
 
