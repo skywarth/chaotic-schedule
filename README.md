@@ -104,13 +104,36 @@ $schedule->command('your-command-signature:here')->sundays()->atRandom('16:00','
 //Since the latter has a unique identifier, it has a distinguished seed which completely differentiates the generated randoms.
 ```
 
+- ##### Example usage #4
+Run a command weekdays at a random time between 12:00 and 20:00, but only if the hour is not 15:00.
+
+```php
+$schedule->command('your-command-signature:here')->weekdays()->atRandom('16:00', '17:00', null, function(int $motd){
+  if($motd>=900 && $motd<=960){//$motd represents minute-of-the-day. 900th minute is 15:00. 
+    return $motd+60;
+  }else{
+    return $motd;     
+  }
+});
+```
+
+
 #### 2. `->dailyAtRandom(string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null)`
 
 Identical to [atRandom](#at-random) macro. Just a different name.
 
 #### 3. `->hourlyAtRandom(int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null)`
 
-WIP!
+Used for scheduling you commands to run every hour at random minutes.
+
+
+| Parameter          | Type                | Example Value                                                                    | Description                                                                                                                                                                                                                                                                    |
+|--------------------|---------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `minMinutes`       | int                 | `15`                                                                             | Minimum value for the random minute of hour (inclusive)                                                                                                                                                                                                                        |
+| `maxMinutes`       | int                 | `44`                                                                             | Maximum value for the random minute of hour (inclusive)                                                                                                                                                                                                                        |
+| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                                         | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                      |
+| `closure`          | callable (nullable) | <pre>function(int $randomMinute){<br><br>return $randomMinute%10;<br>}<br></pre> | Optional closure to tweak the designated random minute according to your needs. For example you may use this to run the command only on multiplies of 10. `int` random minute (between 0-59) is injected and `int` response that is between 0-59 is expected from the closure. |
+
 
 ---
 
