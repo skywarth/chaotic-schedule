@@ -402,10 +402,10 @@ class ChaoticSchedule
      */
     private function registerRandomDaysMacro(){
         $chaoticSchedule=$this;
-        Event::macro('randomDays', function (int $period, ?array $daysOfTheWeek,int $timesMin,int $timesMax,?string $uniqueIdentifier=null) use($chaoticSchedule){
+        Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
 
-            return $chaoticSchedule->randomDaysSchedule($this,$period,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier);
+            return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });
     }

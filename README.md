@@ -16,8 +16,11 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
   - [Use Cases](#use-cases)
 - [Documentation](#documentation)
   - [How to Use](#how-to-use)
-    - [Random Time](#random-time)
-    - [Random Date](#random-date)
+    - [Random Time Macros](#random-time-macros)
+      - [atRandom](#at-random)
+      - [dailyAtRandom](#daily-at-random)
+      - [hourlyAtRandom](#hourly-at-random)
+    - [Random Date Macros](#random-date-macros)
   - [Info for Nerds](#info-for-nerds)
 - [Roadmap & TODOs](#roadmap-and-todos)
 - [Credits & References](#credits-and-references)
@@ -26,6 +29,10 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
 
 <a name='installation'></a>
 ## Installation
+
+0. Consider the requirements
+   - PHP >=`7.4` is required
+
 
 1. Install the package via composer:
 ```bash
@@ -60,6 +67,8 @@ This Laravel packages enables you to run commands on random intervals and period
 <a name='documentation'></a>
 ## Documentation
 
+<a name='how-to-use'></a>
+
 <a name='random-time-macros'></a>
 ### Random Time Macros
 
@@ -69,7 +78,7 @@ This Laravel packages enables you to run commands on random intervals and period
 Used for scheduling your commands to run at random time of the day. 
 
 - Only designates random **run time**
-- Doesn't designate any date on the schedule. So you have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
+- Doesn't designate any date on the schedule. So you have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()`, `randomDays()` etc.
 
 | Parameter          | Type                | Example Value                                                   | Description                                                                                                                                                                                                                                                   |
 |--------------------|---------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
@@ -128,6 +137,11 @@ Identical to [atRandom](#at-random) macro. Just a different name.
 
 Used for scheduling you commands to run every hour at random minutes.
 
+- Runs every hour, but at random minutes for each hour
+- Only designates random **run time**
+- Doesn't designate any date on the schedule. So you have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
+
+
 
 | Parameter          | Type                | Example Value                                                                    | Description                                                                                                                                                                                                                                                                              |
 |--------------------|---------------------|----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
@@ -153,12 +167,42 @@ $schedule->command('your-command-signature:here')->hourlyAtRandom(0,12);
 $schedule->command('your-command-signature:here')->hourlyAtRandom(48,59,'custom-identifier-to-customize-seed');
 ```
 
+- ##### Example usage #3
+
+Run a command every hour, between minutes 30-45 but only on multiplies of 5.
+
+```php
+$schedule->command('your-command-signature:here')->hourlyAtRandom(30,45,null,function(int $minute){
+return min(($minute%5),0);
+});
+
+```
+
 
 
 ---
 
 <a name='random-date-macros'></a>
-### Random Date Macros 
+### Random Date Macros
+
+#### 1. `->randomDays(int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null)`
+
+Used for scheduling your commands to run at random dates for given constraints and period.
+
+- Only designates random **run date**
+- Doesn't designate any run time on the schedule. So you have to provide some time scheduling such as `hourly()`, `everySixHours()`, `everyTenMinutes()`, `atRandom()` etc.
+
+
+| Parameter          | Type                  | Example Value                       | Description                                                                                                                                                                                                                                                                                                                                                  |
+|--------------------|-----------------------|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `periodType`       | int                   | `RandomDateScheduleBasis::Week`     | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any value presented in `RandomDateScheduleBasis` class/enum.                           |
+| `daysOfWeek`       | array<int> (nullable) | `[Carbon::Sunday, Carbon::Tuesday]` | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::Wednesday, Carbon:: Monday]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used. |
+| `timesMin`         | int                   | `2`                                 | Defines the minimum amount of times the command is expected to run for the given period. E.g: period is `week` and `timesMin=4`, that means this command will run at least 4 times each week.                                                                                                                                                                |
+| `timesMin`         | int                   | `12`                                | Defines the maximum amount of times the command is expected to run for the given period. E.g: period is `month` and `timesMin=5` and `timesMax=12`, that means this command will run at least 5, at most 12 times each month. Exact number of times that it'll run is resolved in runtime according to seed.                                                 |
+| `uniqueIdentifier` | string (nullable)     | `'my-custom-identifier'`            | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                                                                                    |
+| `closureXXXXXXX`   | callable (nullable)   | YYYY                                | XXXXXXXX                                                                                                                                                                                                                                                                                                                                                     |
+
+
 
 
 
