@@ -78,14 +78,14 @@ This Laravel packages enables you to run commands on random intervals and period
 Used for scheduling your commands to run at random time of the day. 
 
 - Only designates random **run time**
-- Doesn't designate any date on the schedule. So you have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()`, `randomDays()` etc.
+- Doesn't designate any date on the schedule. So you may have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()`, `randomDays()` etc.
 
-| Parameter          | Type                | Example Value                                                   | Description                                                                                                                                                                                                                                                   |
-|--------------------|---------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-| `minTime`          | string              | `'14:15'`                                                       | Minimum value for the random time range (inclusive)                                                                                                                                                                                                           |
-| `maxTime`          | string              | `'22:38'`                                                       | Maximum value for the random time range (inclusive)                                                                                                                                                                                                           |
-| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                        | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                     |
-| `closure`          | callable (nullable) | <pre>function(int $motd){<br><br>return $motd+5;<br>}<br></pre> | Optional closure to tweak the designated random minute of the day according to your needs. For example you may use this to run the command only on odd-numbered minutes. `int` minute of the day is injected and `int` response is expected from the closure. |
+| Parameter          | Type                | Example Value                                                   | Description                                                                                                                                                                                                                                                                                          |
+|--------------------|---------------------|-----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `minTime`          | string              | `'14:15'`                                                       | Minimum value for the random time range (inclusive)                                                                                                                                                                                                                                                  |
+| `maxTime`          | string              | `'22:38'`                                                       | Maximum value for the random time range (inclusive)                                                                                                                                                                                                                                                  |
+| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                        | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                            |
+| `closure`          | callable (nullable) | <pre>function(int $motd){<br><br>return $motd+5;<br>}<br></pre> | Optional closure to tweak the designated random minute of the day according to your needs. For example you may use this to run the command only on odd-numbered minutes. `int` minute of the day and `Event` (Schedule) instance is injected, meanwhile `int` response is expected from the closure. |
 
 - ##### Example usage #1
 
@@ -139,16 +139,16 @@ Used for scheduling you commands to run every hour at random minutes.
 
 - Runs every hour, but at random minutes for each hour
 - Only designates random **run time**
-- Doesn't designate any date on the schedule. So you have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
+- Doesn't designate any date on the schedule. So you may have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
 
 
 
-| Parameter          | Type                | Example Value                                                                    | Description                                                                                                                                                                                                                                                                              |
-|--------------------|---------------------|----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-| `minMinutes`       | int                 | `15`                                                                             | Minimum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                  |
-| `maxMinutes`       | int                 | `44`                                                                             | Maximum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                  |
-| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                                         | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                |
-| `closure`          | callable (nullable) | <pre>function(int $randomMinute){<br><br>return $randomMinute%10;<br>}<br></pre> | Optional closure to tweak the designated random minute according to your needs. For example you may use this to run the command only on multiplies of 10. generated `int` random minute (between 0-59) is injected and `int` response that is between 0-59 is expected from the closure. |
+| Parameter          | Type                | Example Value                                                                                     | Description                                                                                                                                                                                                                                                                                                                              |
+|--------------------|---------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `minMinutes`       | int                 | `15`                                                                                              | Minimum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                                                                  |
+| `maxMinutes`       | int                 | `44`                                                                                              | Maximum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                                                                  |
+| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                                                          | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                                                                |
+| `closure`          | callable (nullable) | <pre>function(int $randomMinute, Event $schedule){<br><br>return $randomMinute%10;<br>}<br></pre> | Optional closure to tweak the designated random minute according to your needs. For example you may use this to run the command only on multiplies of 10. <br><br> Generated `int` random minute (between 0-59) and `Event` (Schedule) instance is injected, meanwhile `int` response that is between 0-59 is expected from the closure. |
 
 - ##### Example usage #1
 
@@ -172,7 +172,7 @@ $schedule->command('your-command-signature:here')->hourlyAtRandom(48,59,'custom-
 Run a command every hour, between minutes 30-45 but only on multiplies of 5.
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyAtRandom(30,45,null,function(int $minute){
+$schedule->command('your-command-signature:here')->hourlyAtRandom(30,45,null,function(int $minute, Event $schedule){
 return min(($minute%5),0);
 });
 
@@ -190,19 +190,60 @@ return min(($minute%5),0);
 Used for scheduling your commands to run at random dates for given constraints and period.
 
 - Only designates random **run date**
-- Doesn't designate any run time on the schedule. So you have to provide some time scheduling such as `hourly()`, `everySixHours()`, `everyTenMinutes()`, `atRandom()` etc.
+- Doesn't designate any run time on the schedule. So you **have to** provide some time scheduling such as `hourly()`, `everySixHours()`, `everyTenMinutes()`, `atRandom()` etc.
 
 
-| Parameter          | Type                  | Example Value                       | Description                                                                                                                                                                                                                                                                                                                                                  |
-|--------------------|-----------------------|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-| `periodType`       | int                   | `RandomDateScheduleBasis::Week`     | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any value presented in `RandomDateScheduleBasis` class/enum.                           |
-| `daysOfWeek`       | array<int> (nullable) | `[Carbon::Sunday, Carbon::Tuesday]` | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::Wednesday, Carbon:: Monday]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used. |
-| `timesMin`         | int                   | `2`                                 | Defines the minimum amount of times the command is expected to run for the given period. E.g: period is `week` and `timesMin=4`, that means this command will run at least 4 times each week.                                                                                                                                                                |
-| `timesMin`         | int                   | `12`                                | Defines the maximum amount of times the command is expected to run for the given period. E.g: period is `month` and `timesMin=5` and `timesMax=12`, that means this command will run at least 5, at most 12 times each month. Exact number of times that it'll run is resolved in runtime according to seed.                                                 |
-| `uniqueIdentifier` | string (nullable)     | `'my-custom-identifier'`            | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                                                                                    |
-| `closureXXXXXXX`   | callable (nullable)   | YYYY                                | XXXXXXXX                                                                                                                                                                                                                                                                                                                                                     |
+| Parameter          | Type                  | Example Value                                                                                                                                                                                                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|--------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `periodType`       | int                   | `RandomDateScheduleBasis::Week`                                                                                                                                                                                 | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any value presented in `RandomDateScheduleBasis` class/enum.                                                                                                                                                                                                                          |
+| `daysOfWeek`       | array<int> (nullable) | `[Carbon::Sunday, Carbon::Tuesday]`                                                                                                                                                                             | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::Wednesday, Carbon:: Monday]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used.                                                                                                                                                                                                |
+| `timesMin`         | int                   | `2`                                                                                                                                                                                                             | Defines the minimum amount of times the command is expected to run for the given period. E.g: period is `week` and `timesMin=4`, that means this command will run at least 4 times each week.                                                                                                                                                                                                                                                                                                                                                               |
+| `timesMin`         | int                   | `12`                                                                                                                                                                                                            | Defines the maximum amount of times the command is expected to run for the given period. E.g: period is `month` and `timesMin=5` and `timesMax=12`, that means this command will run at least 5, at most 12 times each month. Exact number of times that it'll run is resolved in runtime according to seed.                                                                                                                                                                                                                                                |
+| `uniqueIdentifier` | string (nullable)     | `'my-custom-identifier'`                                                                                                                                                                                        | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                                                                                                                                                                                                                                                                                   |
+| `closure`          | callable (nullable)   | <pre>function(Collection $possibleDates, Event $schedule){<br><br>return $possibleDates->filter(function (Carbon $date){<br/><br/>     return $date->day%2!==0;//odd numbered days only <br/>});<br>}<br></pre> | Closure parameter for adjusting random dates for the command. <br> This closure is especially useful if you would like to exclude certain dates, or add some dates to the possible dates to choose from. <br><br> Possible dates as `Carbon` instances are injected as `collection` to the closures, these dates represent the pool of possible dates to choose from for random dates, it doesn't represent designated run dates. `Event` (Schedule) instance is injected as well. Closure response is expected to be a `collection` of `Carbon` instances. |
+
+- ##### Example usage #1
+
+Run a command 5 to 10 times/days (as in dates) each month randomly.
+
+```php
+$schedule->command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::MONTH,[],5,10);
+```
+
+- ##### Example usage #2
+
+Run a command exactly 2 times (as in dates) per week, but only on wednesdays or saturdays.
+
+```php
+$schedule->command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::WEDNESDAY,Carbon::SATURDAY],2,2);
+```
+
+- ##### Example usage #3
+
+Run a command 15-30 times (as in dates) per year, only on Fridays.
+
+```php
+$schedule->command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::YEAR,[Carbon::FRIDAY],15,30);
+```
 
 
+- ##### Example usage #4
+
+Run a command 1 to 3 times (as in dates) per month, only on weekends, and only on odd days .
+
+```php
+$schedule->command('your-command-signature:here')->randomDays(
+    RandomDateScheduleBasis::MONTH,
+    [Carbon::SATURDAY,Carbon::SUNDAY],
+    1,3,
+    null,
+    function (Collection $dates){
+        return $dates->filter(function (Carbon $date){
+            return $date->day%2!==0;//odd numbered days only
+        });
+    }
+);
+```
 
 
 
