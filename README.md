@@ -245,6 +245,12 @@ $schedule->command('your-command-signature:here')->randomDays(
 );
 ```
 
+<a name='info-for-nerds'></a>
+### Info for nerds
+
+#### Consistency, seed and pRNG
+
+
 
 
 <a name='roadmap-and-todos'></a>
