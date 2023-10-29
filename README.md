@@ -250,6 +250,26 @@ $schedule->command('your-command-signature:here')->randomDays(
 
 #### Consistency, seed and pRNG
 
+It was a concern to generate consistent and same random values for the duration of the given interval. 
+This is due to the fact that the Laravel scheduler is triggered via CRON tab every minute. So we needed a solution to generate consistent randoms for each trigger of the scheduler. 
+Otherwise, it would simply designate random date/time runs each time it runs, which will result in: commands never running at all (because run designation changes constantly), or commands running more that desired/planned.
+
+In the world of cryptography and statistics, such challenges are tackled via pRNGs (pseudo random number generators). pRNGs as indicated in its name: is a pseudo random number generator which works with seed values and generates randoms determined by that seed, hence the name.
+Therefore, pRNGs would allow us to generate consistent and exactly same random values as long as seed remains the same. 
+Now the question is what seed shall we pair pRNG with? After some pondering around, I deduced that if I give corresponding date/time of the interval, it would effectively be consistent throughout the interval.
+Henceforth, all the randomizing methods and macros work by utilizing `SeedGenerationService` which is responsible for generating seeds based on certain intervals (day, month, week etc.)
+This ensures your random run date/times are consistent throughout the interval, enabling consistency.
+
+To those with a keen eye, this might present a possible problem. 
+If the seed is paired only with interval, wouldn't that result in identical random date/time runs for separate commands? **Exactly!** 
+Because of this, `SeedGenerationService` also takes command signatures into consideration by incorporating `uniqueIdentifier` (which is either command signature or custom identifier) into it's seed designation methods. This way, even if the separate commands have identical random scheduling, they'll have distinct randomization for them thanks to the `uniqueIdentifier` 
+
+#### Asserting the chaos
+
+When dealing with pRNGs, nothing is truly chaotic and random, actually. It's all mathematics and statistics, it's deterministic.
+In order to ensure no harm could come from these randoms, I've prepared dozens of unit and feature tests for the different aspects of the library.
+From seed generation to generated random consistency, from distribution uniformity to validations, from design pattern implementation to dependency injection, all is well tested and asserted.
+See the code coverage reports and CI/CD runs regarding these functional tests.
 
 
 
