@@ -22,6 +22,9 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
       - [hourlyAtRandom](#hourly-at-random)
     - [Random Date Macros](#random-date-macros)
   - [Info for Nerds](#info-for-nerds)
+    - [Consistency, seed and pRNG](#consistency-seed-prng)
+    - [Asserting the chaos](#asserting-the-chaos)
+    - [Performance](#performance)
 - [Roadmap & TODOs](#roadmap-and-todos)
 - [Credits & References](#credits-and-references)
 
@@ -248,6 +251,7 @@ $schedule->command('your-command-signature:here')->randomDays(
 <a name='info-for-nerds'></a>
 ### Info for nerds
 
+<a name='consistency-seed-prng'></a>
 #### Consistency, seed and pRNG
 
 It was a concern to generate consistent and same random values for the duration of the given interval. 
@@ -264,12 +268,27 @@ To those with a keen eye, this might present a possible problem.
 If the seed is paired only with interval, wouldn't that result in identical random date/time runs for separate commands? **Exactly!** 
 Because of this, `SeedGenerationService` also takes command signatures into consideration by incorporating `uniqueIdentifier` (which is either command signature or custom identifier) into it's seed designation methods. This way, even if the separate commands have identical random scheduling, they'll have distinct randomization for them thanks to the `uniqueIdentifier` 
 
+<a name='asserting-the-chaos'></a>
 #### Asserting the chaos
 
 When dealing with pRNGs, nothing is truly chaotic and random, actually. It's all mathematics and statistics, it's deterministic.
 In order to ensure no harm could come from these randoms, I've prepared dozens of unit and feature tests for the different aspects of the library.
 From seed generation to generated random consistency, from distribution uniformity to validations, from design pattern implementation to dependency injection, all is well tested and asserted.
 See the code coverage reports and CI/CD runs regarding these functional tests.
+
+<a name='performance'></a>
+#### Performance
+
+As you might already know, Laravel scheduler runs every minute via CRON tab entry (see: https://laravel.com/docs/10.x/scheduling#running-the-scheduler).
+And since `kernel.php` (where you define your schedules) runs every minute, Laravel has to determine whether each command is designated to run at this minute or not.
+This is performed by running & checking datetime scheduling assignments and `->when()` statements on your command scheduling.
+
+This library heavily relies on pRNG, seed generation based on date/time and run designations.
+Hence, it is no surprise these calculations, randomization (pseudo) and designations are performed each time your `kernel.php` runs, which is every minute as explained on the previous paragraph.
+**So yes, if you're on low-specs, it could affect your pipeline. Because these seed determination, run date/time designations, pseudo-random values are determined on each schedule iteration.** Massive amounts (250+) of randomized command schedules could clog your server performance a bit in terms of memory usage. 
+
+But other than that, as the *Jules* from *Pulp Fiction* said:
+> "As far as I know, MF is tip-top"  
 
 
 
