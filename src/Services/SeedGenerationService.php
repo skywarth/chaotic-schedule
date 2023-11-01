@@ -25,6 +25,14 @@ class SeedGenerationService
     }
 
 
+    public function seedForHour(string $uniqueIdentifier):int{
+        $str= $this->castUniqueIdentifier($uniqueIdentifier).$this->dateString('zHy');
+        $hashed=$this->hash($str);
+        $seed= $this->castToSeedFormat($hashed);
+        return $seed;
+    }
+
+
     public function seedForDay(string $uniqueIdentifier):int{
         $str= $this->castUniqueIdentifier($uniqueIdentifier).$this->dateString('Dzy');
         $hashed=$this->hash($str);

@@ -150,13 +150,13 @@ class ChaoticSchedule
         //H:i is 24 hour format
 
 
-        //TODO: Seed choice is completely incorrect. Seed should be based on hour here.
-        //TODO: Where is the unit/feat test for this macro, numb-nut?
         $randomMinute=$this->getRng()
-            ->setSeed($this->getSeeder()->seedForDay($identifier))
+            ->setSeed($this->getSeeder()->seedForHour($identifier))
             ->intBetween($minMinutes,$maxMinutes);
 
 
+
+        //TODO: test the closure as well
         if(!empty($closure)){
             $randomMinute=$closure($randomMinute,$schedule);
             $this->validateClosureResponse($randomMinute,'integer');
