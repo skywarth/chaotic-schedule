@@ -23,7 +23,7 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 class UnifiedMacroTest extends AbstractChaoticScheduleTest
 {
 
-    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, string $periodType, callable $scheduleMacroInjection ):Collection{
+    protected function randomDateTimeScheduleTestingBoilerplate(Carbon $nowMock, string $rngEngineSlug , string $periodType, callable $scheduleMacroInjection ):Collection{
 
         //WIP
         //assertion
@@ -34,40 +34,47 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
 
 
         $runDates=collect();
-       /* foreach ($period as $index=>$date){
-            $schedule = new Schedule();
-            $schedule=$schedule->command('test');
-            $chaoticSchedule=new ChaoticSchedule(
-                new SeedGenerationService($date),
-                new RNGFactory($rngEngineSlug)
-            );
-            $schedule=$chaoticSchedule->randomDaysSchedule($schedule,$periodType,$daysOfWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
+        foreach ($period as $index=>$date){
+            $date=$date->startOfDay();
+            for($i=0;$i<=(24*60);$i++){
+                $date=$date->addMinute();
 
+                $schedule = new Schedule();
+                $schedule=$schedule->command('test');
+                $chaoticSchedule=new ChaoticSchedule(
+                    new SeedGenerationService($date),
+                    new RNGFactory($rngEngineSlug)
+                );
 
+                $schedule=$scheduleMacroInjection($chaoticSchedule,$schedule);
 
-            Carbon::setTestNow($date); //Mock carbon now for Laravel event
-            if($schedule->isDue(app())){
+                Carbon::setTestNow($date); //Mock carbon now for Laravel event
+                if($schedule->isDue(app())){
 
-                $runDates->push($date);
-
-                $this->assertTrue($date->isBetween($periodBegin,$periodEnd),'Generated random run date is not in the range');
-                $this->assertContains($date->dayOfWeek,$daysOfWeek);
-
+                    $runDates->push($date);
+                }
+                Carbon::setTestNow();//resetting the carbon::now to original
             }
-            Carbon::setTestNow();//resetting the carbon::now to original
+
         }
 
-        $this->assertGreaterThanOrEqual($timesMin,$runDates->count());
-        $this->assertLessThanOrEqual($timesMax,$runDates->count());*/
         return $runDates;
     }
 
     public function testRandomTimeWeeklyBasisBasic()
     {
-        //WIP
+
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
-        $this->getChaoticSchedule()->randomTimeSchedule($schedule,'09:00','12:00')->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::MONDAY,Carbon::SATURDAY,Carbon::WEDNESDAY],2,2,);
+        $nowMock=Carbon::createFromDate(2021,10,05);
+        $this->assertTrue(true);
+        return;//WIP
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,[],3,3);
+            return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,'10:00','18:00');
+        };
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$macroInjectionClosure);
+        dd($runDateTimes);
         $this->assertTrue(true);
     }
 
