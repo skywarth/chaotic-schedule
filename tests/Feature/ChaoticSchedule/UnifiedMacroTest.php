@@ -23,7 +23,7 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 class UnifiedMacroTest extends AbstractChaoticScheduleTest
 {
 
-    protected function randomDateTimeScheduleTestingBoilerplate(Carbon $nowMock, string $rngEngineSlug , string $periodType, array $daysOfWeek ,string $minTime, string $maxTime, callable $scheduleMacroInjection ):Collection{
+    protected function randomDateTimeScheduleTestingBoilerplate(Carbon $nowMock, string $rngEngineSlug , string $periodType, array $daysOfWeek ,string $minTime,string $maxTime, int $runAmountMin, int $runAmountMax,   callable $scheduleMacroInjection ):Collection{
 
         //WIP
 
@@ -36,12 +36,13 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
 
 
         $minuteIteration=1;
-        $runDates=collect();
+        $runDateTimes=collect();
         foreach ($period as $index=>$date){
             $date=$date->startOfDay();
-            for($i=0;$i<=(24*60);$i+=$minuteIteration){
+            for($i=0;$i<=((24*60)-1);$i+=$minuteIteration){
                 $date=$date->addMinutes($minuteIteration);
 
+                //dump($date->format('d-m-Y H:i'));
                 $schedule = new Schedule();
                 $schedule=$schedule->command('test');
                 $chaoticSchedule=new ChaoticSchedule(
@@ -55,7 +56,7 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
                 if($schedule->isDue(app())){
 
 
-                    $runDates->push($date->format('d-m-Y H:i'));
+                    $runDateTimes->push($date->format('d-m-Y H:i'));
 
                     //maybe make these below as assertion closure
                     $this->assertTrue($date->isBetween($periodBegin,$periodEnd), "$date->day-$date->month-$date->year is not in between the designated period");
@@ -67,7 +68,10 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
 
         }
 
-        return $runDates;
+        $runAmount=$runDateTimes->count();
+        $this->assertTrue($runAmount>=$runAmountMin && $runAmount<=$runAmountMax,"Ran $runAmount times while expecting between $runAmountMin to $runAmountMax");
+
+        return $runDateTimes;
     }
 
     public function testRandomTimeWeeklyBasisBasic()
@@ -77,13 +81,17 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
         $maxTime='18:00';
         $daysOfWeek=ChaoticSchedule::ALL_DOW;
 
+        $runAmountMin=3;
+        $runAmountMax=3;
 
-        $nowMock=Carbon::createFromDate(2021,10,05);
-        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime){
-            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,3,3);
+
+        $nowMock=Carbon::createFromDate(2023,12,12);
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,$runAmountMin,$runAmountMax);
             return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
         };
-        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$macroInjectionClosure);
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+
 
     }
 

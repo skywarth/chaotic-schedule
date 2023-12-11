@@ -279,7 +279,9 @@ class ChaoticSchedule
 
 
             $closestDesignatedRun=$designatedRuns->sortBy(function (Carbon $date){
-                return $date->diffInDays($this->getBasisDate());
+                //return $date->diffInDays($this->getBasisDate());
+                //Keeping that commented tedious bug as trophy. Costed me several hours. Suck it!
+                return $date->startOfDay()->diffInDays($this->getBasisDate()->startOfDay());
             })->first();
 
 
