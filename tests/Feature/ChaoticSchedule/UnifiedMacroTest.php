@@ -74,7 +74,7 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
         return $runDateTimes;
     }
 
-    public function testRandomTimeWeeklyBasisBasic()
+    public function testRandomTimeWeeklyBasisAllDowExactAmount()
     {
 
         $minTime='10:00';
@@ -91,6 +91,113 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
             return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
         };
         $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+
+
+    }
+
+    public function testRandomTimeWeeklyBasisAllDowRandomAmount()
+    {
+
+        $minTime='01:00';
+        $maxTime='06:00';
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+
+        $runAmountMin=2;
+        $runAmountMax=6;
+
+
+        $nowMock=Carbon::createFromDate(2023,6,4);
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,$runAmountMin,$runAmountMax);
+            return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
+        };
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+
+
+    }
+
+    public function testRandomTimeWeeklyBasisSelectiveDowExactAmount()
+    {
+
+        $minTime='19:42';
+        $maxTime='22:11';
+        $daysOfWeek=[Carbon::MONDAY,Carbon::WEDNESDAY,Carbon::FRIDAY];
+
+        $runAmountMin=2;
+        $runAmountMax=2;
+
+
+        $nowMock=Carbon::createFromDate(2004,12,8);
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,$runAmountMin,$runAmountMax);
+            return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
+        };
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+
+
+    }
+
+
+    public function testRandomTimeWeeklyBasisSelectiveDowRandomAmount()
+    {
+
+        $minTime='23:12';
+        $maxTime='23:55';
+        $daysOfWeek=[Carbon::MONDAY,Carbon::WEDNESDAY,Carbon::FRIDAY,Carbon::SATURDAY];
+
+        $runAmountMin=1;
+        $runAmountMax=3;
+
+
+        $nowMock=Carbon::createFromDate(2006,3,7);
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,$runAmountMin,$runAmountMax);
+            return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
+        };
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+
+
+    }
+
+
+    public function testRandomTimeMonthlyBasisAllDowRandomAmount()
+    {
+
+        $minTime='00:05';
+        $maxTime='00:13';
+        $daysOfWeek=ChaoticSchedule::ALL_DOW;
+
+        $runAmountMin=7;
+        $runAmountMax=20;
+
+
+        $nowMock=Carbon::createFromDate(2014,5,21);
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::MONTH,$daysOfWeek,$runAmountMin,$runAmountMax);
+            return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
+        };
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::MONTH,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+
+
+    }
+
+    public function testRandomTimeMonthlyBasisSelectiveDowExactAmount()
+    {
+
+        $minTime='03:17';
+        $maxTime='09:37';
+        $daysOfWeek=[Carbon::SUNDAY,Carbon::THURSDAY,Carbon::SATURDAY];
+
+        $runAmountMin=2;
+        $runAmountMax=8;
+
+
+        $nowMock=Carbon::createFromDate(2017,11,7);
+        $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
+            $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::MONTH,$daysOfWeek,$runAmountMin,$runAmountMax);
+            return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
+        };
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::MONTH,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
 
 
     }
