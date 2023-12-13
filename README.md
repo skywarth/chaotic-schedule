@@ -359,6 +359,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
     - [X] Unique identifier (parameter and auto)
     - [X] Invalid params (out of range, min-max order, format)
     - [X] Closures
+  - [X] Unified macro usage feature test
 
 <a name='credits-and-references'></a>
 ## Credits & References
