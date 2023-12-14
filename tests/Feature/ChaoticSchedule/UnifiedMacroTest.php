@@ -132,7 +132,7 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
             $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,$runAmountMin,$runAmountMax);
             return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
         };
-        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'mersenne-twister',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
 
 
     }
@@ -154,7 +154,7 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
             $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::WEEK,$daysOfWeek,$runAmountMin,$runAmountMax);
             return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
         };
-        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'mersenne-twister',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
 
 
     }
@@ -197,7 +197,7 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
             $dateAppliedSchedule=$chaoticSchedule->randomDaysSchedule($schedule,RandomDateScheduleBasis::MONTH,$daysOfWeek,$runAmountMin,$runAmountMax);
             return $chaoticSchedule->randomTimeSchedule($dateAppliedSchedule,$minTime,$maxTime);
         };
-        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'seed-spring',RandomDateScheduleBasis::MONTH,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
+        $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'mersenne-twister',RandomDateScheduleBasis::MONTH,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
 
 
     }
