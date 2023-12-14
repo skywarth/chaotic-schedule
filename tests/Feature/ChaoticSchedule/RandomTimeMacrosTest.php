@@ -38,7 +38,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         for ($i=0;$i<25;$i++){
             $date=$this->getChaoticSchedule()->randomTimeSchedule($schedule,'09:06','09:44','test'.$i,function (int $motd){
                 //return $motd;//ensures that it only schedules for odd-number minutes
-                return ($motd-(($motd%2)-1));//ensures that it only schedules/runs on only odd-number minutes
+                return $motd-(($motd%2)-1);//ensures that it only schedules/runs on only odd-number minutes
             })->nextRunDate();
             $runDates->push($date->minute);
         }
