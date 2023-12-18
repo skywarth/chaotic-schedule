@@ -20,10 +20,7 @@ class ChaoticScheduleServiceProvider extends ServiceProvider
     {
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/config.php', 'chaotic-schedule');
-       /* $this->app->bind(ChaoticSchedule::class, function($app) {
-            return new ChaoticSchedule();
-        });*/
-        $this->app->bind(ChaoticSchedule::class);//TODO: Singleton perhaps
+        $this->app->singleton(ChaoticSchedule::class);//Beware that singleton can produce unexpected results for tests.
 
 
 
