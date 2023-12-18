@@ -378,3 +378,10 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 - https://github.com/CiaccoDavide/CiaccoPRNG (Not Implemented)
 - https://github.com/hxtree/pseudorandom (Not Implemented)
 
+
+This project has been developed using JetBrains products.
+Thanks for their [support for open-source development](https://www.jetbrains.com/community/opensource/#support).
+
+
+| <img width="150" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg" alt="JetBrains Logo (Main) logo."> | <img width="200" src="https://resources.jetbrains.com/storage/products/company/brand/logos/PhpStorm.svg" alt="PhpStorm logo."> |
+|--------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
