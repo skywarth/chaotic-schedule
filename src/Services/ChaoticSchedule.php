@@ -271,7 +271,7 @@ class ChaoticSchedule
         //"When using chained when methods, the scheduled command will only execute if all when conditions return true."
         //So this usage shouldn't stir other ->when() statements
         if($designatedRuns->isNotEmpty()){
-            $schedule->when(function (Event $event) use($designatedRuns){
+            $schedule->when(function() use($designatedRuns){
                 return $designatedRuns->contains(function (Carbon $runDate){
                     return $this->getBasisDate()->isSameDay($runDate);
                 });
@@ -289,7 +289,7 @@ class ChaoticSchedule
         }else{
             // This section means there is no designatedRun date available.
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
-            $schedule->when(function (Event $event) use($designatedRuns){
+            $schedule->when(function() use($designatedRuns){
               return false;
             });
 
