@@ -4,7 +4,7 @@ Laravel package for randomizing command schedule intervals via pRNGs.
 
 
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=skywarth_chaotic-schedule&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=skywarth_chaotic-schedule)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=skywarth_chaotic-schedule&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=skywarth_chaotic-schedule)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=skywarth_chaotic-schedule&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=skywarth_chaotic-schedule)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=skywarth_chaotic-schedule&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=skywarth_chaotic-schedule)
 
 
