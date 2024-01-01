@@ -119,7 +119,7 @@ Run a command every Sunday between 16:00 - 17:00 and also on Monday between 09:0
 ```php
 //Observe that the both schedules share the same command, but one has custom unique identifier
 $schedule->command('your-command-signature:here')->sundays()->atRandom('16:00','17:00');
-$schedule->command('your-command-signature:here')->sundays()->atRandom('16:00','17:00','this-is-special');
+$schedule->command('your-command-signature:here')->mondays()->atRandom('09:00','12:00','this-is-special');
 //Since the latter has a unique identifier, it has a distinguished seed which completely differentiates the generated randoms.
 ```
 
