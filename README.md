@@ -255,6 +255,20 @@ $schedule->command('your-command-signature:here')->randomDays(
 );
 ```
 
+
+### Joint examples
+
+Examples about using both random time and random date macros together.
+
+- ##### Example usage #1
+
+Run a command 1 to 2 times (as in dates) among Friday, Tuesday, Sunday, and only between 14:48 - 16:54
+
+
+```php
+$schedule->command('your-command-signature:here')->weekly()->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::FRIDAY,Carbon::Tuesday,Carbon::Sunday],1,2)->atRandom('14:48','16:54');
+```
+
 <a name='info-for-nerds'></a>
 ### Info for nerds
 
