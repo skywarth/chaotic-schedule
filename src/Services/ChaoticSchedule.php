@@ -171,6 +171,81 @@ class ChaoticSchedule
         return $schedule;
     }
 
+    public function randomMultipleMinutesSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
+
+        if($minMinutes>$maxMinutes){
+            throw new IncorrectRangeException($minMinutes,$maxMinutes);
+        }
+        if($minMinutes<0 || $maxMinutes>59){
+            throw new \OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+        }
+        if($timesMin<0 || $timesMax<0){
+            throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');//TODO: duplicate, refactor
+        }
+        if($timesMin>$timesMax){
+            throw new IncorrectRangeException($timesMin,$timesMax); //TODO: duplicate, refactor
+        }
+
+
+
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+
+        $minutePeriod=$maxMinutes-$minMinutes;
+        if($minutePeriod<$timesMax){
+            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many minutes (only $minutePeriod minutes available) for the given period and constraints. Please check your closure, times min-max and minimum/maximum minutes.");
+        }
+
+        //H:i is 24 hour format
+
+        $this->getRng()->setSeed($this->getSeeder()->seedForHour($identifier));//TODO: maybe optional parameter for seed period? E.g: I want seed to be exact and same for a week
+
+        $runTimes=$this->getRng()->intBetween($timesMin,$timesMax);
+
+        $designatedRunMinutes=collect();
+        $possibleMinutes=collect(range($minMinutes,$maxMinutes));
+        for($i=0;$i<=$runTimes;$i++){
+            $randomIndex=$this->getRng()->intBetween(0,$possibleMinutes->count()-1);
+            $designatedRunMinute=$possibleMinutes->pull($randomIndex);
+            $designatedRunMinutes->push($designatedRunMinute);
+        }
+
+        //Filtering out past minutes, leaving only the future minutes
+        $designatedRunMinutes=$designatedRunMinutes->filter(function ($minute){
+            return $this->getBasisDate()->minute>=$minute;
+        });
+
+        if($designatedRunMinutes->isNotEmpty()){
+            $schedule->when(function() use($designatedRunMinutes){
+                return $designatedRunMinutes->contains($this->getBasisDate()->minute);
+            });
+
+            $randomMinute=$designatedRunMinutes->sort()->first();
+
+
+            //TODO: test the closure as well
+            if(!empty($closure)){
+                $randomMinute=$closure($randomMinute,$schedule);
+                $this->validateClosureResponse($randomMinute,'integer');
+            }
+
+            $randomMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
+
+
+            $schedule->hourlyAt($randomMinute);
+        }else{
+
+        }
+
+
+
+
+
+
+
+
+        return $schedule;
+    }
+
 
     /**
      * @throws IncorrectRangeException
@@ -252,7 +327,7 @@ class ChaoticSchedule
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
             $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
-            $designatedRun=$possibleDates->get($randomIndex);
+            $designatedRun=$possibleDates->get($randomIndex);//TODO: Maybe replace with pull? Instead of getting and removing.
             $designatedRuns->push($designatedRun);
             $possibleDates->forget($randomIndex);
             $possibleDates=$possibleDates->values();//re-indexing
