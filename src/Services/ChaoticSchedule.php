@@ -217,7 +217,7 @@ class ChaoticSchedule
         if($designatedRunMinutes->isNotEmpty()){
             $schedule->when(function() use($designatedRunMinutes){
                 return $designatedRunMinutes->contains($this->getBasisDate()->minute);
-            });
+            });//TODO: bug here. This can easily conflict because closure is applied afterwards. I think we should go with passing array to closure
 
             $randomMinute=$designatedRunMinutes->sort()->first();
 
