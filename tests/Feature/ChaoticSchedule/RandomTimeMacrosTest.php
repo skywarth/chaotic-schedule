@@ -355,4 +355,43 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
+    public function testRandomMultipleMinuteVariableTimesBetweenLimits()
+    {
+        $basisDate=Carbon::createFromDate(2022,07,16)->setTime(15,0);
+        $rngEngineSlug='mersenne-twister';
+        $minutesMin=17;
+        $minutesMax=56;
+        $timesMin=3;
+        $timesMax=3;
+
+
+
+        $runMinutes=collect();
+
+        for($i=0;$i<=59;$i++){
+            $schedule = new Schedule();
+            $command=$schedule->command('test');
+            $chaoticSchedule=new ChaoticSchedule(
+                new SeedGenerationService($basisDate),
+                new RNGFactory($rngEngineSlug)
+            );
+
+            Carbon::setTestNow($basisDate); //Mock carbon now for Laravel event
+            $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax);
+
+            if($schedule->isDue(app())){
+                $runMinutes->push($basisDate->minute);
+            }
+            $basisDate->addminute();
+            Carbon::setTestNow();
+        }
+
+
+        $this->assertLessThanOrEqual($timesMax,$runMinutes->unique()->count());
+        $this->assertGreaterThanOrEqual($timesMin,$runMinutes->unique()->count());
+
+
+    }
+
+
 }

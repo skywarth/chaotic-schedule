@@ -173,6 +173,9 @@ class ChaoticSchedule
 
     public function randomMultipleMinutesSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
+        //TODO: merging this method and randomMinute() kinda makes sense, not sure if I should. Open to discussion.
+        //TODO: under certain parameters, this should perform identical to randomMinute(), test it.
+
         if($minMinutes>$maxMinutes){
             throw new IncorrectRangeException($minMinutes,$maxMinutes);
         }
@@ -190,56 +193,57 @@ class ChaoticSchedule
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
 
-        $minutePeriod=$maxMinutes-$minMinutes;
-        if($minutePeriod<$timesMax){
-            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many minutes (only $minutePeriod minutes available) for the given period and constraints. Please check your closure, times min-max and minimum/maximum minutes.");
-        }
-
         //H:i is 24 hour format
 
         $this->getRng()->setSeed($this->getSeeder()->seedForHour($identifier));//TODO: maybe optional parameter for seed period? E.g: I want seed to be exact and same for a week
 
         $runTimes=$this->getRng()->intBetween($timesMin,$timesMax);
-
         $designatedRunMinutes=collect();
         $possibleMinutes=collect(range($minMinutes,$maxMinutes));
-        for($i=0;$i<=$runTimes;$i++){
+        if($possibleMinutes->count()<$timesMax){
+            $possibleMinutesCount=$possibleMinutes->count();
+            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many minutes (only $possibleMinutesCount minutes available) for the given period and constraints. Please check your closure, times min-max and minimum/maximum minutes.");
+        }
+        for($i=0;$i<$runTimes;$i++){
             $randomIndex=$this->getRng()->intBetween(0,$possibleMinutes->count()-1);
             $designatedRunMinute=$possibleMinutes->pull($randomIndex);
+            $possibleMinutes=$possibleMinutes->values();
             $designatedRunMinutes->push($designatedRunMinute);
         }
 
+        if(!empty($closure)){
+            $designatedRunMinutes=$closure($designatedRunMinutes,$schedule);
+            $this->validateClosureResponse($possibleMinutes,'object');//Collection of minute of the hour (e.g: 23, 57, 7) expected
+        }
+
+        $designatedRunMinutes=$designatedRunMinutes->values();
+
         //Filtering out past minutes, leaving only the future minutes
         $designatedRunMinutes=$designatedRunMinutes->filter(function ($minute){
-            return $this->getBasisDate()->minute>=$minute;
+            return $this->getBasisDate()->minute<=$minute;
         });
 
         if($designatedRunMinutes->isNotEmpty()){
             $schedule->when(function() use($designatedRunMinutes){
                 return $designatedRunMinutes->contains($this->getBasisDate()->minute);
-            });//TODO: bug here. This can easily conflict because closure is applied afterwards. I think we should go with passing array to closure
+            });//TODO: FIXED bug here. This can easily conflict because closure is applied afterwards. I think we should go with passing array to closure
 
             $randomMinute=$designatedRunMinutes->sort()->first();
 
-
-            //TODO: test the closure as well
-            if(!empty($closure)){
-                $randomMinute=$closure($randomMinute,$schedule);
-                $this->validateClosureResponse($randomMinute,'integer');
-            }
 
             $randomMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
 
 
             $schedule->hourlyAt($randomMinute);
         }else{
+            // This section means there is no designatedRun minute available.
+            // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
+            $schedule->when(false);
 
+            $bogusMinute=($this->getBasisDate()->minute+2)%60;
+
+            $schedule->hourlyAt($bogusMinute);
         }
-
-
-
-
-
 
 
 
@@ -364,7 +368,7 @@ class ChaoticSchedule
         }else{
             // This section means there is no designatedRun date available.
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
-            $schedule->when(function() use($designatedRuns){
+            $schedule->when(function() use($designatedRuns){//TODO: why not simplify?
               return false;
             });
 
@@ -475,11 +479,31 @@ class ChaoticSchedule
         });
     }
 
+    private function registerHourlyMultipleAtRandomMacro(){
+        $chaoticSchedule=$this;
+        Event::macro('hourlyMultipleAtRandom', function (int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+
+            return $chaoticSchedule->randomMultipleMinutesSchedule($this,$minMinutes,$maxMinutes,$timesMin,$timesMax,$uniqueIdentifier,$closure);
+
+        });
+    }
+
 
     /**
      * @return void
      */
     private function registerRandomDaysMacro(){
+        $chaoticSchedule=$this;
+        Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+
+            return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
+
+        });
+    }
+
+    private function registerRandomMultipleMinutesMacro(){
         $chaoticSchedule=$this;
         Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
