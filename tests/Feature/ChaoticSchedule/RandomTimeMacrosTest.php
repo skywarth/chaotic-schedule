@@ -3,9 +3,11 @@
 namespace Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule;
 
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
+use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
@@ -355,43 +357,136 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    public function testRandomMultipleMinuteVariableTimesBetweenLimits()
-    {
-        $basisDate=Carbon::createFromDate(2022,07,16)->setTime(15,0);
-        $rngEngineSlug='mersenne-twister';
-        $minutesMin=17;
-        $minutesMax=56;
-        $timesMin=3;
-        $timesMax=3;
-
-
-
+    protected function randomMultipleMinuteTestingBoilerplate(Carbon $nowMock,string $rngEngineSlug,int $minutesMin, int $minutesMax, int $timesMin, int $timesMax):Collection{
         $runMinutes=collect();
 
         for($i=0;$i<=59;$i++){
             $schedule = new Schedule();
             $command=$schedule->command('test');
             $chaoticSchedule=new ChaoticSchedule(
-                new SeedGenerationService($basisDate),
+                new SeedGenerationService($nowMock),
                 new RNGFactory($rngEngineSlug)
             );
 
-            Carbon::setTestNow($basisDate); //Mock carbon now for Laravel event
+            Carbon::setTestNow($nowMock); //Mock carbon now for Laravel event
             $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax);
 
             if($schedule->isDue(app())){
-                $runMinutes->push($basisDate->minute);
+                $runMinutes->push($nowMock->minute);
             }
-            $basisDate->addminute();
+            $nowMock->addminute();
             Carbon::setTestNow();
         }
+        return $runMinutes->unique();
+    }
 
+    public function testRandomMultipleMinuteVariableTimesBetweenLimits()
+    {
+        $nowMock=Carbon::createFromDate(2022,07,16)->setTime(15,0);
+        $rngEngineSlug='mersenne-twister';
+        $minutesMin=17;
+        $minutesMax=56;
+        $timesMin=4;
+        $timesMax=8;
 
-        $this->assertLessThanOrEqual($timesMax,$runMinutes->unique()->count());
-        $this->assertGreaterThanOrEqual($timesMin,$runMinutes->unique()->count());
+        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax);
+
+        $this->assertLessThanOrEqual($timesMax,$runMinutes->count());
+        $this->assertGreaterThanOrEqual($timesMin,$runMinutes->count());
 
 
     }
 
+    public function testRandomMultipleMinuteExactTimes()
+    {
+        $nowMock=Carbon::createFromDate(2048,9,12)->setTime(07,0);
+        $rngEngineSlug='mersenne-twister';
+        $minutesMin=8;
+        $minutesMax=39;
+        $times=7;
+
+        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$times,$times);
+
+        $this->assertEquals($times,$runMinutes->count());
+
+    }
+
+    public function testRandomMultipleMinuteRangeBoundary()
+    {
+        $nowMock=Carbon::createFromDate(2011,6,15)->setTime(23,0);
+        $rngEngineSlug='mersenne-twister';
+        $minutesMin=7;
+        $minutesMax=32;
+        $timesMin=10;
+        $timesMax=15;
+
+        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax);
+
+        $runMinutesOutOfBoundary=$runMinutes->filter(fn(int $minute)=>$minute>$minutesMax&&$minute<$minutesMin);
+        $this->assertEquals(0,$runMinutesOutOfBoundary->count());
+
+    }
+
+
+    /*
+    public function testRandomMultipleMinutesUseCaseFromRedditN1Variant2()
+    {
+        //https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
+        //Possible variant #2, since use case is a bit vague:
+        //"Do you think I can simply set up a command that runs on weekdays (Monday till Friday) between 8:00 and 18:00 about 4 to 5 times randomly/"humanly" per hour?"
+        // Run 4-5 times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour). Minutes of each hour are random
+        $nowMock=Carbon::createFromDate(2024,04,15)->setTime(13,0);
+        $rngEngineSlug='mersenne-twister';
+        $minutesMin=5;
+        $minutesMax=45;
+        $timesMin=10;
+        $timesMax=15;
+        $runMinutes=collect();
+
+        $periodBegin=$nowMock->clone();
+        $periodEnd=$nowMock->clone()->next('Friday');
+
+        $period=CarbonPeriod::create($periodBegin, $periodEnd);
+        foreach ($period as $date){
+            $date->startOfDay()
+        }
+        for($i=0;$i<=59;$i++){
+            $schedule = new Schedule();
+            $command=$schedule->command('test')->weekdays()->between('08:00','18:00');
+            $chaoticSchedule=new ChaoticSchedule(
+                new SeedGenerationService($nowMock),
+                new RNGFactory($rngEngineSlug)
+            );
+
+            Carbon::setTestNow($nowMock); //Mock carbon now for Laravel event
+            $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax);
+
+            if($schedule->isDue(app())){
+                $runMinutes->push($nowMock->minute);
+            }
+            $nowMock->addminute();
+            Carbon::setTestNow();
+        }
+        return $runMinutes->unique();
+        $runMinutesOutOfBoundary=$runMinutes->filter(fn(int $minute)=>$minute>$minutesMax&&$minute<$minutesMin);
+        $this->assertEquals(0,$runMinutesOutOfBoundary->count());
+    }
+    public function testRandomMultipleMinuteX()
+    {
+        $nowMock=Carbon::createFromDate(2013,11,12)->setTime(18,0);
+        $rngEngineSlug='mersenne-twister';
+        $minutesMin=5;
+        $minutesMax=45;
+        $timesMin=10;
+        $timesMax=15;
+
+        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax);
+
+        dd($runMinutes);
+        $runMinutesOutOfBoundary=$runMinutes->filter(fn(int $minute)=>$minute>$minutesMax&&$minute<$minutesMin);
+        $this->assertEquals(0,$runMinutesOutOfBoundary->count());
+
+    }
+    */
 
 }

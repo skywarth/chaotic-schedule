@@ -226,8 +226,6 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
 
     public function testUseCaseFromRedditN1Variant2()
     {
-        $this->assertTrue(true);//TODO: activate
-        return;
         //https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
         //Possible variant #2, since use case is a bit vague:
         // Run 4-5 times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour). Minutes of each hour are random
@@ -239,10 +237,20 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
         $runAmountMax=5;
 
 
-        $nowMock=Carbon::createFromDate(2024,02,11);
+        $mock=Carbon::createFromDate(2024,04,15)->setTime(04,15);
+        Carbon::setTestNow($mock);
+        $this->travelTo($mock);//redundant
+        $x=new Schedule();
+        $schedule=$x->command('test')->weekdays()->everyFiveMinutes()->between($minTime,$maxTime);
+        dump($schedule->nextRunDate($mock)->format('d-m-Y H:i'));
+        dd($schedule->isDue(app()));
+
+
+        $nowMock=Carbon::createFromDate(2024,04,15);
         $macroInjectionClosure=function(ChaoticSchedule $chaoticSchedule, Event $schedule) use($daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax){
-            $dateAppliedSchedule=$schedule->weekdays();
-            return $chaoticSchedule->randomMinuteSchedule($dateAppliedSchedule,$minTime,$maxTime);
+            $dateAppliedSchedule=$schedule->weekdays()->between($minTime,$maxTime);//Between isn't working?
+            return $dateAppliedSchedule;
+            return $chaoticSchedule->randomMultipleMinutesSchedule($dateAppliedSchedule,0,59,$runAmountMin,$runAmountMax);
         };
         $runDateTimes=$this->randomDateTimeScheduleTestingBoilerplate($nowMock,'mersenne-twister',RandomDateScheduleBasis::WEEK,$daysOfWeek,$minTime,$maxTime,$runAmountMin,$runAmountMax,$macroInjectionClosure);
         dd($runDateTimes);
