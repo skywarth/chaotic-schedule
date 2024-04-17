@@ -234,13 +234,13 @@ class ChaoticSchedule
             $randomMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
 
 
-            $schedule->hourlyAt($randomMinute);
+            $schedule->hourlyAt($randomMinute);//TODO: BUG here, hourlyAt conflicts with everySixHours, everyTwoHours etc.
         }else{
             // This section means there is no designatedRun minute available.
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
             $schedule->when(false);
 
-            $bogusMinute=($this->getBasisDate()->minute+2)%60;
+            $bogusMinute=($this->getBasisDate()->minute-2)%60;
 
             $schedule->hourlyAt($bogusMinute);
         }
