@@ -381,6 +381,10 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
     - [X] Invalid params (out of range, min-max order, format)
     - [X] Closures
   - [X] Unified macro usage feature test
+  - [ ] Timezone tests
+    - [ ] Applying timezone works in conjunction with time macros
+    - [ ] Applying timezone works in conjunction with date macros
+- [ ] [Use case from reddit, N1](https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3)
 
 <a name='credits-and-references'></a>
 ## Credits & References

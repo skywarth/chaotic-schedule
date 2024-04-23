@@ -223,6 +223,7 @@ class ChaoticSchedule
             return $this->getBasisDate()->minute<=$minute;
         });
 
+        $designatedNextRunMinute=null;
         if($designatedRunMinutes->isNotEmpty()){
             $schedule->when(function() use($designatedRunMinutes){
                 return $designatedRunMinutes->contains($this->getBasisDate()->minute);
@@ -231,19 +232,19 @@ class ChaoticSchedule
             $randomMinute=$designatedRunMinutes->sort()->first();
 
 
-            $randomMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
+            $designatedNextRunMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
 
-
-            $schedule->hourlyAt($randomMinute);//TODO: BUG here, hourlyAt conflicts with everySixHours, everyTwoHours etc.
         }else{
             // This section means there is no designatedRun minute available.
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
             $schedule->when(false);
-
-            $bogusMinute=($this->getBasisDate()->minute-2)%60;
-
-            $schedule->hourlyAt($bogusMinute);
+            $designatedNextRunMinute=($this->getBasisDate()->minute-2)%60;//Bogus minute
         }
+
+
+        //$schedule->hourlyAt($designatedNextRunMinute);//TODO: BUG here, hourlyAt conflicts with everySixHours, everyTwoHours etc.
+        //hourlyAt also makes testing difficult
+        $schedule->at($this->getBasisDate()->hour.':'.$designatedNextRunMinute);
 
 
 
