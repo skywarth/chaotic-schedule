@@ -428,65 +428,86 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    /*
+
     public function testRandomMultipleMinutesUseCaseFromRedditN1Variant2()
     {
         //https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
         //Possible variant #2, since use case is a bit vague:
         //"Do you think I can simply set up a command that runs on weekdays (Monday till Friday) between 8:00 and 18:00 about 4 to 5 times randomly/"humanly" per hour?"
         // Run 4-5 times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour). Minutes of each hour are random
-        $nowMock=Carbon::createFromDate(2024,04,15)->setTime(13,0);
+        $nowMock=Carbon::createFromDate(2024,04,21)->startOfDay();
+        $daysOfWeek=[Carbon::MONDAY,Carbon::TUESDAY,Carbon::WEDNESDAY,Carbon::THURSDAY,Carbon::FRIDAY];
         $rngEngineSlug='mersenne-twister';
+
+        //Can't assert ->between(). See: https://github.com/laravel/framework/issues/50670
+        //So I'm setting the time range to whole
+        $minTime='00:00';
+        $maxTime='24:00';
+
         $minutesMin=5;
         $minutesMax=45;
-        $timesMin=10;
-        $timesMax=15;
-        $runMinutes=collect();
+        $timesMin=4;
+        $timesMax=5;
+        $runDateTimes=collect();
 
         $periodBegin=$nowMock->clone();
-        $periodEnd=$nowMock->clone()->next('Friday');
+        $periodEnd=$nowMock->clone()->next('sunday');
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
-        foreach ($period as $date){
-            $date->startOfDay()
-        }
-        for($i=0;$i<=59;$i++){
-            $schedule = new Schedule();
-            $command=$schedule->command('test')->weekdays()->between('08:00','18:00');
-            $chaoticSchedule=new ChaoticSchedule(
-                new SeedGenerationService($nowMock),
-                new RNGFactory($rngEngineSlug)
-            );
+        $minuteIteration=1;
+        //dd(Carbon::createFromDate(2024,04,21)->startOfDay()->dayOfWeek);
+        foreach ($period as $index=>$date){
+            //Each day loop
+            $date=$date->startOfDay();
+            for($i=0;$i<24;$i++){
+                //Each hour loop
 
-            Carbon::setTestNow($nowMock); //Mock carbon now for Laravel event
-            $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax);
+                for($k=0;$k<(60/$minuteIteration);$k++){
+                    //Each minute iteration loop
+                    $date=$date->addMinutes($minuteIteration);
 
-            if($schedule->isDue(app())){
-                $runMinutes->push($nowMock->minute);
+                    $schedule = new Schedule();
+                    $schedule=$schedule->command('test')->weekdays();
+                    $chaoticSchedule=new ChaoticSchedule(
+                        new SeedGenerationService($date),
+                        new RNGFactory($rngEngineSlug)
+                    );
+                    $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($schedule,$minutesMin,$minutesMax,$timesMin,$timesMax);
+
+                    Carbon::setTestNow($date); //Mock carbon now for Laravel event
+                    $this->travelTo($date);//redundant
+                    //dump($date->toString());
+                    if($schedule->isDue(app())){
+
+
+                        $runDateTimes->push($date->clone());
+                        /*dump($periodBegin->format('d-m-Y H:i'));
+                        dump($periodEnd->format('d-m-Y H:i'));
+                        dump($date->toString());*/
+                        /*$this->assertTrue($date->isBetween($periodBegin,$periodEnd), "$date->day-$date->month-$date->year is not in between the designated period");
+                        $this->assertTrue($date->isBetween($date->clone()->setTimeFromTimeString($minTime),$date->clone()->setTimeFromTimeString($maxTime)),"$date->hour:$date->minute is not in between $minTime - $maxTime");
+                        $this->assertContains($date->dayOfWeek,$daysOfWeek);*/
+                    }
+                    Carbon::setTestNow();//resetting the carbon::now to original
+                }
             }
-            $nowMock->addminute();
-            Carbon::setTestNow();
+
+
         }
-        return $runMinutes->unique();
-        $runMinutesOutOfBoundary=$runMinutes->filter(fn(int $minute)=>$minute>$minutesMax&&$minute<$minutesMin);
-        $this->assertEquals(0,$runMinutesOutOfBoundary->count());
+
+
+        //dump(Carbon::createFromDate(2024,04,26)->startOfDay()->dayOfWeek);
+        //dd($daysOfWeek);
+        /*dd($runDateTimes->filter(function (Carbon $runDateTime) use($daysOfWeek){
+            return !in_array($runDateTime->dayOfWeek,$daysOfWeek);
+        })->transform(fn($x)=>$x->dayOfWeek));*/
+
+        $this->assertTrue($runDateTimes->doesntContain(function (Carbon $runDateTime) use($daysOfWeek){
+            return !in_array($runDateTime->dayOfWeekIso,$daysOfWeek);
+        }));
+        //dd($runDateTimes);
     }
-    public function testRandomMultipleMinuteX()
-    {
-        $nowMock=Carbon::createFromDate(2013,11,12)->setTime(18,0);
-        $rngEngineSlug='mersenne-twister';
-        $minutesMin=5;
-        $minutesMax=45;
-        $timesMin=10;
-        $timesMax=15;
 
-        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax);
 
-        dd($runMinutes);
-        $runMinutesOutOfBoundary=$runMinutes->filter(fn(int $minute)=>$minute>$minutesMax&&$minute<$minutesMin);
-        $this->assertEquals(0,$runMinutesOutOfBoundary->count());
-
-    }
-    */
 
 }
