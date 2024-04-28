@@ -476,17 +476,8 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
                     Carbon::setTestNow($date); //Mock carbon now for Laravel event
                     $this->travelTo($date);//redundant
-                    //dump($date->toString());
                     if($schedule->isDue(app())){
-
-
                         $runDateTimes->push($date->clone());
-                        /*dump($periodBegin->format('d-m-Y H:i'));
-                        dump($periodEnd->format('d-m-Y H:i'));
-                        dump($date->toString());*/
-                        /*$this->assertTrue($date->isBetween($periodBegin,$periodEnd), "$date->day-$date->month-$date->year is not in between the designated period");
-                        $this->assertTrue($date->isBetween($date->clone()->setTimeFromTimeString($minTime),$date->clone()->setTimeFromTimeString($maxTime)),"$date->hour:$date->minute is not in between $minTime - $maxTime");
-                        $this->assertContains($date->dayOfWeek,$daysOfWeek);*/
                     }
                     Carbon::setTestNow();//resetting the carbon::now to original
                 }
@@ -496,16 +487,24 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         }
 
 
-        //dump(Carbon::createFromDate(2024,04,26)->startOfDay()->dayOfWeek);
-        //dd($daysOfWeek);
-        /*dd($runDateTimes->filter(function (Carbon $runDateTime) use($daysOfWeek){
-            return !in_array($runDateTime->dayOfWeek,$daysOfWeek);
-        })->transform(fn($x)=>$x->dayOfWeek));*/
-
         $this->assertTrue($runDateTimes->doesntContain(function (Carbon $runDateTime) use($daysOfWeek){
-            return !in_array($runDateTime->dayOfWeekIso,$daysOfWeek);
+            return !in_array($runDateTime->dayOfWeek,$daysOfWeek);
         }));
-        //dd($runDateTimes);
+
+        $this->assertTrue($runDateTimes->doesntContain(function (Carbon $runDateTime) use($periodBegin,$periodEnd){
+            return !$runDateTime->isBetween($periodBegin,$periodEnd);
+        }),'Run datetimes outside of range has been detected');
+
+
+        $this->assertTrue($runDateTimes->groupBy(function (Carbon $runDateTime){
+            return $runDateTime->format('z-H');//Grouping per day-of-year and hour of the day
+        })->doesntContain(function(Collection $collection) use ($timesMin,$timesMax){
+            $count=$collection->count();//Asserting that each hour contains run times between timesMin and timesMax
+            return $count>$timesMax || $count<$timesMin;
+        }),'Hourly run amounts are out of designated range.');
+        //$this->assertTrue($date->isBetween($date->clone()->setTimeFromTimeString($minTime),$date->clone()->setTimeFromTimeString($maxTime)),"$date->hour:$date->minute is not in between $minTime - $maxTime");
+
+
     }
 
 

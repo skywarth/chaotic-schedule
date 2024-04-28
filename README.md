@@ -338,7 +338,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
     Shuffle this array using RNG.
     Based on the requirement (like 2 times a week or 6 times a month), slice the array to get the required number of days.
     Return the selected days.
-  - It should enable the following scenarios (times in the following only define date/day based times! It doesn't take time/minute into account.)
+  - [X] It should enable the following scenarios (times in the following only define date/day based times! It doesn't take time/minute into account.)
     - [X] Once a week, any day of the week
     - [X] Once a week, among wednesday and friday
       - Example: It'll run wednesday this week. (Basically you roll dice each week)
@@ -385,7 +385,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
     - [ ] Applying timezone works in conjunction with time macros
     - [ ] Applying timezone works in conjunction with date macros
   - [ ] [CRUCIBLE!] Merge all distributed date-time iteration methods in tests into one
-- [ ] [Use case from reddit, N1](https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3)
+- [X] [Use case from reddit, N1](https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3)
 - [ ] Possible bug: `->dateOfWeek` and `->dateOfWeekIso` differ per monday-sunday diff in start. Check existing assertions.
 
 <a name='credits-and-references'></a>
