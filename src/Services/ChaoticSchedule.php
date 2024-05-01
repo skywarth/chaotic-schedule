@@ -449,7 +449,7 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
@@ -462,7 +462,7 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
@@ -475,7 +475,7 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
 
         });
@@ -483,9 +483,13 @@ class ChaoticSchedule
 
     private function registerHourlyMultipleAtRandomMacro(){
         $chaoticSchedule=$this;
+        /**
+         * @method Event::hourlyMultipleAtRandom()
+         * @function hourlyMultipleAtRandom()
+         */
         Event::macro('hourlyMultipleAtRandom', function (int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomMultipleMinutesSchedule($this,$minMinutes,$maxMinutes,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });
@@ -499,7 +503,7 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });
