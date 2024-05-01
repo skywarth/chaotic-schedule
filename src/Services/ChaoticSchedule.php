@@ -227,7 +227,7 @@ class ChaoticSchedule
         if($designatedRunMinutes->isNotEmpty()){
             $schedule->when(function() use($designatedRunMinutes){
                 return $designatedRunMinutes->contains($this->getBasisDate()->minute);
-            });//TODO: FIXED bug here. This can easily conflict because closure is applied afterwards. I think we should go with passing array to closure
+            });//FIXED bug here. This can easily conflict because closure is applied afterwards. I think we should go with passing array to closure
 
             $randomMinute=$designatedRunMinutes->sort()->first();
 
@@ -242,7 +242,7 @@ class ChaoticSchedule
         }
 
 
-        //$schedule->hourlyAt($designatedNextRunMinute);//TODO: BUG here, hourlyAt conflicts with everySixHours, everyTwoHours etc.
+        //$schedule->hourlyAt($designatedNextRunMinute);//BUG here, hourlyAt conflicts with everySixHours, everyTwoHours etc.
         //hourlyAt also makes testing difficult
         $schedule->at($this->getBasisDate()->hour.':'.$designatedNextRunMinute);
 
@@ -369,9 +369,7 @@ class ChaoticSchedule
         }else{
             // This section means there is no designatedRun date available.
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
-            $schedule->when(function() use($designatedRuns){//TODO: why not simplify?
-              return false;
-            });
+            $schedule->when(false);
 
             $bogusDate=$periodEnd->clone()->next(RandomDateScheduleBasis::getString($periodType));//Maybe instead of this, just offset to next  year.
 
