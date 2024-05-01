@@ -436,6 +436,7 @@ class ChaoticSchedule
     public function registerMacros(){
         $this->registerAtRandomMacro();
         $this->registerHourlyAtRandomMacro();
+        $this->registerHourlyMultipleAtRandomMacro();
         $this->registerDailyAtRandomRandomMacro();
 
         $this->registerRandomDaysMacro();
@@ -504,15 +505,6 @@ class ChaoticSchedule
         });
     }
 
-    private function registerRandomMultipleMinutesMacro(){
-        $chaoticSchedule=$this;
-        Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
-            //Laravel automatically injects and replaces $this in the context
-
-            return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
-
-        });
-    }
     /* //MACROS END
      __  __          _____ _____   ____   _____   ______ _   _ _____
     |  \/  |   /\   / ____|  __ \ / __ \ / ____| |  ____| \ | |  __ \
