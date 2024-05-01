@@ -37,8 +37,9 @@ class ChaoticScheduleServiceProviderTest extends TestCase
         $event->atRandom('13:00','15:00');
         $event->dailyAtRandom('10:00','12:00');
         $event->hourlyAtRandom(15,38);
-        $event->randomDays(RandomDateScheduleBasis::WEEK,null,1,3);
         $event->hourlyMultipleAtRandom(8,47,3,6);
+        $event->randomDays(RandomDateScheduleBasis::WEEK,null,1,3);
+
 
 
     }
