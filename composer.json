@@ -34,7 +34,9 @@
         }
     },
     "scripts": {
-        "test":"./vendor/bin/phpunit"
+        "test":"./vendor/bin/phpunit",
+        "test-random-time-macros":"@test --filter RandomTimeMacrosTest",
+        "test-random-date-macros":"@test --filter RandomDateMacrosTest"
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
