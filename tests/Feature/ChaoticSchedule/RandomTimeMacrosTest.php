@@ -7,6 +7,8 @@ use Carbon\CarbonPeriod;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
+use LogicException;
+use OutOfRangeException;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
@@ -506,6 +508,40 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
 
     }
+
+
+    public function testRandomMultipleMinuteMinMinutesBiggerThanMaxMinutesException()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(IncorrectRangeException::class);
+        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,16,9);
+    }
+
+    public function testRandomMultipleMinuteMinuteOutOfRangeException()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(OutOfRangeException::class);
+        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,14,62);
+    }
+
+    public function testRandomMultipleMinuteTimesAmountOutOfRangeException()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(LogicException::class);
+        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,55,-3,4);
+    }
+
+    public function testRandomMultipleMinuteTimesMinimumBiggerThanMaximumException()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(IncorrectRangeException::class);
+        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,30,4,2);
+    }
+
 
 
 

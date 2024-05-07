@@ -9,6 +9,7 @@ use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use InvalidArgumentException;
 use LogicException;
+use OutOfRangeException;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
@@ -142,7 +143,7 @@ class ChaoticSchedule
             throw new IncorrectRangeException($minMinutes,$maxMinutes);
         }
         if($minMinutes<0 || $maxMinutes>59){
-            throw new \OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
         }
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
@@ -180,7 +181,7 @@ class ChaoticSchedule
             throw new IncorrectRangeException($minMinutes,$maxMinutes);
         }
         if($minMinutes<0 || $maxMinutes>59){
-            throw new \OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
         }
         if($timesMin<0 || $timesMax<0){
             throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');//TODO: duplicate, refactor
