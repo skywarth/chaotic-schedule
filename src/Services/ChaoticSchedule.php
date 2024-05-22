@@ -214,7 +214,7 @@ class ChaoticSchedule
 
         if(!empty($closure)){
             $designatedRunMinutes=$closure($designatedRunMinutes,$schedule);
-            $this->validateClosureResponse($possibleMinutes,'object');//Collection of minute of the hour (e.g: 23, 57, 7) expected
+            $this->validateClosureResponse($designatedRunMinutes,'object');//Collection of minute of the hour (e.g: 23, 57, 7) expected
         }
 
         $designatedRunMinutes=$designatedRunMinutes->values();

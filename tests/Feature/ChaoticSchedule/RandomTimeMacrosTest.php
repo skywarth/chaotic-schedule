@@ -13,6 +13,7 @@ use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
+use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\MersenneTwisterAdapter;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
@@ -504,7 +505,11 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
             $count=$collection->count();//Asserting that each hour contains run times between timesMin and timesMax
             return $count>$timesMax || $count<$timesMin;
         }),'Hourly run amounts are out of designated range.');
-        //$this->assertTrue($date->isBetween($date->clone()->setTimeFromTimeString($minTime),$date->clone()->setTimeFromTimeString($maxTime)),"$date->hour:$date->minute is not in between $minTime - $maxTime");
+
+        $this->assertTrue($runDateTimes->doesntContain(function (Carbon $runDateTime) use($minTime,$maxTime){
+            return !$runDateTime->isBetween($runDateTime->clone()->setTimeFromTimeString($minTime),$runDateTime->clone()->setTimeFromTimeString($maxTime));
+        }));
+
 
 
     }
@@ -540,6 +545,25 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $schedule=$schedule->command('test');
         $this->expectException(IncorrectRangeException::class);
         $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,30,4,2);
+    }
+
+    public function testRandomMultipleMinuteRunTimesMaxExceedsPossibleRunsException()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(RunTimesExpectationCannotBeMet::class);
+        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,10,4,10);
+    }
+
+    public function testRandomMultipleMinuteIncompatibleClosureResponseException()
+    {
+        $schedule = new Schedule();
+        $schedule=$schedule->command('test');
+        $this->expectException(IncompatibleClosureResponse::class);
+        $closure=function (Collection $designatedRunTimes,Event $schedule){
+            return 55;
+        };
+        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,45,2,5,null,$closure);
     }
 
 

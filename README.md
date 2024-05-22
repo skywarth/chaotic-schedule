@@ -71,7 +71,8 @@ This Laravel packages enables you to run commands on random intervals and period
 - I have a command to send notifications to my clients. But I would like it to be sent at a random time between `14:00` and `17:00`
 - I would like to send some gifts to users if they are active between my special event period which is every week `Friday` and `Saturday` between `00:00` and `04:20`
 - My boss asked me to generate and send statistical reports regarding database activities every month, but only on `Monday`, `Wednesday` and `Friday`. And this report has to be delivered in the morning between `08:00` and `09:30` and I want it to look like I've personally generated and sent it personally. So random time and date is crucial to stage this.
-- I would like to send reminders to customers and I want it to look and feel *human*. So random run times and dates every week would help me a lot. Otherwise, if I send every week on `Tuesday` `11:00` they would know this is automated and ignore these. 
+- I would like to send reminders to customers and I want it to look and feel *human*. So random run times and dates every week would help me a lot. Otherwise, if I send every week on `Tuesday` `11:00` they would know this is automated and ignore these.
+- There is a financial deficit, in order to detect the source of it I'll be running audit calculations. But these have to be random, otherwise they'll alter the records accordingly. I need to run audit calculations/assertions 3 times a day at random times.
 - I'm trying to detect certain anomalies in my data, and therefore it would help me a lot to run a command completely randomly but with a minimum of at least 100 times a year.
 
 <a name='documentation'></a>
@@ -363,6 +364,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 - [ ] Indicating next runs dates. Either via overriding `schedule:list` or defining a custom command which works specifically for commands that use our macros.
   - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
+- [ ] Add `randomMultipleMinutesSchedule` to documentation
 - [ ] PHPDoc comments for methods and classes
 - [X] Unit/feature tests
   - [X] Time based methods and macros
