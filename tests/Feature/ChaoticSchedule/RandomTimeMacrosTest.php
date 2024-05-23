@@ -360,7 +360,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
     }
 
 
-    protected function randomMultipleMinuteTestingBoilerplate(Carbon $nowMock,string $rngEngineSlug,int $minutesMin, int $minutesMax, int $timesMin, int $timesMax):Collection{
+    protected function randomMultipleMinuteTestingBoilerplate(Carbon $nowMock,string $rngEngineSlug,int $minutesMin, int $minutesMax, int $timesMin, int $timesMax,callable $closure=null):Collection{
         $runMinutes=collect();
 
         for($i=0;$i<=59;$i++){
@@ -372,7 +372,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
             );
 
             Carbon::setTestNow($nowMock); //Mock carbon now for Laravel event
-            $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax);
+            $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax,null,$closure);
 
             if($schedule->isDue(app())){
                 $runMinutes->push($nowMock->minute);
@@ -427,6 +427,61 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
 
         $runMinutesOutOfBoundary=$runMinutes->filter(fn(int $minute)=>$minute>$minutesMax&&$minute<$minutesMin);
         $this->assertEquals(0,$runMinutesOutOfBoundary->count());
+
+    }
+
+    public function testRandomMultipleMinuteClosureExceptLostNumbers()
+    {
+        $nowMock=Carbon::createFromDate(2024,5,5)->setTime(23,15);
+        $rngEngineSlug='seed-spring';
+        $minutesMin=2;
+        $minutesMax=50;
+        $timesMin=10;
+        $timesMax=15;
+
+        $lostNumbers=[4,8,15,16,23,42];
+        $closure=function (Collection $designatedRunMinutes,Event $event) use ($lostNumbers){
+
+            return $designatedRunMinutes->diff($lostNumbers)->values();
+        };
+
+        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax,$closure);
+
+        $runMinutesOfLostNumbers=$runMinutes->filter(fn(int $minute)=>in_array($minute,$lostNumbers));
+
+        $this->assertEquals(0,$runMinutesOfLostNumbers->count());
+
+    }
+
+    public function testRandomMultipleMinuteClosureOnlyMultipleOfNumber()
+    {
+        $nowMock=Carbon::createFromDate(2022,11,16)->setTime(12,42);
+        $rngEngineSlug='seed-spring';
+        $minutesMin=5;
+        $minutesMax=57;
+        $timesMin=2;
+        $timesMax=2;
+
+        $multipleOf=3;
+
+
+        $closure=function (Collection $designatedRunMinutes,Event $event) use ($multipleOf){
+            return $designatedRunMinutes->map(function (int $minute) use ($multipleOf){
+
+                if($minute%$multipleOf!==0){
+                    return round($minute,$multipleOf)*$multipleOf;
+                }else{
+                    return $minute;
+                }
+            })->values();
+        };
+
+        $runMinutes=$this->randomMultipleMinuteTestingBoilerplate($nowMock,$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax,$closure);
+
+        $runMinutesNonMultiplyOfNumber=$runMinutes->filter(fn(int $minute)=>$minute%$multipleOf!==0)->values();
+
+        $this->assertEquals(0,$runMinutesNonMultiplyOfNumber->count());
+
 
     }
 
