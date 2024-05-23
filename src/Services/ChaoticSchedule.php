@@ -172,7 +172,20 @@ class ChaoticSchedule
         return $schedule;
     }
 
-    public function randomMultipleMinutesSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
+    /**
+     * @param Event $schedule
+     * @param int $minMinutes
+     * @param int $maxMinutes
+     * @param int $timesMin
+     * @param int $timesMax
+     * @param string|null $uniqueIdentifier
+     * @param callable|null $closure
+     * @return Event
+     * @throws IncompatibleClosureResponse
+     * @throws IncorrectRangeException
+     * @throws RunTimesExpectationCannotBeMet
+     */
+    public function randomMultipleMinutesSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
 
         //TODO: merging this method and randomMinute() kinda makes sense, not sure if I should. Open to discussion.
         //TODO: under certain parameters, this should perform identical to randomMinute(), test it.
@@ -480,6 +493,9 @@ class ChaoticSchedule
         });
     }
 
+    /**
+     * @return void
+     */
     private function registerHourlyMultipleAtRandomMacro(){
         $chaoticSchedule=$this;
         /**
