@@ -365,6 +365,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
   - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
 - [ ] Add `randomMultipleMinutesSchedule` to documentation
+- [ ] Separate test classes per method/macro basis
 - [ ] PHPDoc comments for methods and classes
 - [X] Unit/feature tests
   - [X] Time based methods and macros
