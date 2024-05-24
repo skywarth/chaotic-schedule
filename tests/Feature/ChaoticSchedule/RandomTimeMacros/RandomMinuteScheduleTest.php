@@ -95,7 +95,7 @@ class RandomMinuteScheduleTest extends AbstractChaoticScheduleTest
 
     public function testRandomMinuteConsistencyThroughoutTheHour()
     {
-        $schedules=$this->generateRandomMinuteConsecutiveMinutes(60,1,59,Carbon::createFromDate(2023,7,12),MersenneTwisterAdapter::getAdapterSlug());
+        $schedules=$this->generateRandomMinuteConsecutiveMinutes(60,1,59,Carbon::createFromDate(2023,7,12)->startOfDay(),MersenneTwisterAdapter::getAdapterSlug());
         $designatedRuns=$schedules->map(function (Event $schedule){
             return $schedule->nextRunDate()->minute;
         });
@@ -109,7 +109,7 @@ class RandomMinuteScheduleTest extends AbstractChaoticScheduleTest
 
     public function testRandomMinuteInConsistencyThroughoutTheDay()
     {
-        $schedules=$this->generateRandomMinuteConsecutiveMinutes(1440,1,59,Carbon::createFromDate(2012,4,13),SeedSpringAdapter::getAdapterSlug());
+        $schedules=$this->generateRandomMinuteConsecutiveMinutes(1440,1,59,Carbon::createFromDate(2012,4,13)->startOfDay(),SeedSpringAdapter::getAdapterSlug());
         $designatedRuns=$schedules->map(function (Event $schedule){
             return $schedule->nextRunDate()->minute;
         });

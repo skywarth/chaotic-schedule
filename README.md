@@ -203,7 +203,7 @@ Example use case: I want to run a command every hour, 1-5 times at random, on ra
 - Runs multiple times per hour, according to `$timesMin` and `$timesMax` params
 - [!] Using it along with `->everySixHours()` or similar methods are **NOT RECOMMENDED**, because those are also time scheduling methods, and they'll overwrite each other.
 - Doesn't designate any date on the schedule. So you may have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
-
+- Behaves exactly the same with [->hourlyAtRandom](#hourly-at-random) if the `timesMin=1` and `timesMax=1`. (I mean duh)
 
 
 | Parameter          | Type                | Example Value                                                                                                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -419,8 +419,8 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 - [ ] Indicating next runs dates. Either via overriding `schedule:list` or defining a custom command which works specifically for commands that use our macros.
   - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
-- [ ] Add `randomMultipleMinutesSchedule` to documentation
-- [ ] Separate test classes per method/macro basis
+- [X] Add `randomMultipleMinutesSchedule` to documentation
+- [X] Separate test classes per method/macro basis
 - [ ] PHPDoc comments for methods and classes
 - [ ] Inject basis dateTime Carbon instance into the closures
 - [X] Unit/feature tests

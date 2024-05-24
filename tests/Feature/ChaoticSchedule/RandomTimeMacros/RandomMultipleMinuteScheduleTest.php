@@ -12,6 +12,8 @@ use OutOfRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
+use Skywarth\ChaoticSchedule\RNGs\Adapters\MersenneTwisterAdapter;
+use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
 use Skywarth\ChaoticSchedule\Services\SeedGenerationService;
@@ -25,9 +27,10 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
     protected function randomMultipleMinuteTestingBoilerplate(Carbon $nowMock,string $rngEngineSlug,int $minutesMin, int $minutesMax, int $timesMin, int $timesMax,callable $closure=null):Collection{
         $runMinutes=collect();
 
+        $nowMock=$nowMock->startOfHour();//Damn how did I miss one? Weird.
         for($i=0;$i<=59;$i++){
             $schedule = new Schedule();
-            $command=$schedule->command('test');
+            $command=$schedule->command('foo');
             $chaoticSchedule=new ChaoticSchedule(
                 new SeedGenerationService($nowMock),
                 new RNGFactory($rngEngineSlug)
@@ -51,7 +54,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
     public function testRandomMultipleMinuteVariableTimesBetweenLimits()
     {
         $nowMock=Carbon::createFromDate(2022,07,16)->setTime(15,0);
-        $rngEngineSlug='mersenne-twister';
+        $rngEngineSlug=MersenneTwisterAdapter::getAdapterSlug();
         $minutesMin=17;
         $minutesMax=56;
         $timesMin=4;
@@ -68,7 +71,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
     public function testRandomMultipleMinuteExactTimes()
     {
         $nowMock=Carbon::createFromDate(2048,9,12)->setTime(07,0);
-        $rngEngineSlug='mersenne-twister';
+        $rngEngineSlug=MersenneTwisterAdapter::getAdapterSlug();
         $minutesMin=8;
         $minutesMax=39;
         $times=7;
@@ -82,7 +85,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
     public function testRandomMultipleMinuteRangeBoundary()
     {
         $nowMock=Carbon::createFromDate(2011,6,15)->setTime(23,0);
-        $rngEngineSlug='mersenne-twister';
+        $rngEngineSlug=MersenneTwisterAdapter::getAdapterSlug();
         $minutesMin=7;
         $minutesMax=32;
         $timesMin=10;
@@ -98,7 +101,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
     public function testRandomMultipleMinuteClosureExceptLostNumbers()
     {
         $nowMock=Carbon::createFromDate(2024,5,5)->setTime(23,15);
-        $rngEngineSlug='seed-spring';
+        $rngEngineSlug=SeedSpringAdapter::getAdapterSlug();
         $minutesMin=2;
         $minutesMax=50;
         $timesMin=10;
@@ -121,7 +124,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
     public function testRandomMultipleMinuteClosureOnlyMultipleOfNumber()
     {
         $nowMock=Carbon::createFromDate(2022,11,16)->setTime(12,42);
-        $rngEngineSlug='seed-spring';
+        $rngEngineSlug=SeedSpringAdapter::getAdapterSlug();
         $minutesMin=5;
         $minutesMax=57;
         $timesMin=2;
@@ -160,7 +163,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         // Run 4-5 (random) times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour between these). Minutes of each hour are random
         $nowMock=Carbon::createFromDate(2024,04,21)->startOfDay();
         $daysOfWeek=[Carbon::MONDAY,Carbon::TUESDAY,Carbon::WEDNESDAY,Carbon::THURSDAY,Carbon::FRIDAY];
-        $rngEngineSlug='mersenne-twister';
+        $rngEngineSlug=MersenneTwisterAdapter::getAdapterSlug();
 
         //Can't assert ->between(). See: https://github.com/laravel/framework/issues/50670
         //So I'm setting the time range to whole
@@ -284,6 +287,29 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
             return 55;
         };
         $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,45,2,5,null,$closure);
+    }
+
+    public function testRandomMultipleMinutesBehavesExactlySameWithRandomMinuteForSingleRun()
+    {
+
+        $nowMock=Carbon::createFromDate(2024,5,5)->setTime(23,20);
+        $rngEngineSlug=SeedSpringAdapter::getAdapterSlug();
+        $minutesMin=2;
+        $minutesMax=50;
+        $timesMin=1;
+        $timesMax=1;
+
+        $runMinutesForMultiple=$this->randomMultipleMinuteTestingBoilerplate($nowMock->clone(),$rngEngineSlug,$minutesMin,$minutesMax,$timesMin,$timesMax)->unique();
+
+        $this->assertEquals(1,$runMinutesForMultiple->count());
+
+        $runMinutesForSingular=$this->generateRandomMinuteConsecutiveMinutes(60,$minutesMin,$minutesMax,$nowMock->clone(),$rngEngineSlug)->map(function (Event $schedule){
+            return $schedule->nextRunDate()->minute;
+        })->unique();
+
+        $this->assertEquals(1,$runMinutesForSingular->count());
+
+        $this->assertEquals($runMinutesForSingular->first(),$runMinutesForMultiple->first());
     }
 
 
