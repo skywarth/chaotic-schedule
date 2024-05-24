@@ -8,6 +8,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\MersenneTwisterAdapter;
+use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
 use Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule\AbstractChaoticScheduleTest;
 
 class RandomMinuteScheduleTest extends AbstractChaoticScheduleTest
@@ -102,6 +103,20 @@ class RandomMinuteScheduleTest extends AbstractChaoticScheduleTest
         $uniqueRunMinutes=$designatedRuns->unique();
 
         $this->assertEquals(1,$uniqueRunMinutes->count());
+
+
+    }
+
+    public function testRandomMinuteInConsistencyThroughoutTheDay()
+    {
+        $schedules=$this->generateRandomMinuteConsecutiveMinutes(1440,1,59,Carbon::createFromDate(2012,4,13),SeedSpringAdapter::getAdapterSlug());
+        $designatedRuns=$schedules->map(function (Event $schedule){
+            return $schedule->nextRunDate()->minute;
+        });
+
+        $uniqueRunMinutes=$designatedRuns->unique();
+
+        $this->assertNotEquals(1,$uniqueRunMinutes->count());
 
 
     }
