@@ -133,7 +133,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $closure=function (Collection $designatedRunMinutes,Event $event) use ($multipleOf){
             return $designatedRunMinutes->map(function (int $minute) use ($multipleOf){
 
-                if($minute%$multipleOf!==0){
+                if($minute%$multipleOf!==0){//if-else here feels redundant
                     return round($minute,$multipleOf)*$multipleOf;
                 }else{
                     return $minute;
@@ -157,7 +157,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         //https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
         //Possible variant #2, since use case is a bit vague:
         //"Do you think I can simply set up a command that runs on weekdays (Monday till Friday) between 8:00 and 18:00 about 4 to 5 times randomly/"humanly" per hour?"
-        // Run 4-5 times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour). Minutes of each hour are random
+        // Run 4-5 (random) times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour between these). Minutes of each hour are random
         $nowMock=Carbon::createFromDate(2024,04,21)->startOfDay();
         $daysOfWeek=[Carbon::MONDAY,Carbon::TUESDAY,Carbon::WEDNESDAY,Carbon::THURSDAY,Carbon::FRIDAY];
         $rngEngineSlug='mersenne-twister';

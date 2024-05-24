@@ -27,6 +27,7 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
       - [atRandom](#at-random)
       - [dailyAtRandom](#daily-at-random)
       - [hourlyAtRandom](#hourly-at-random)
+      - [hourlyMultipleAtRandom](#hourly-multiple-at-random)
     - [Random Date Macros](#random-date-macros)
   - [Info for Nerds](#info-for-nerds)
     - [Consistency, seed and pRNG](#consistency-seed-prng)
@@ -189,7 +190,61 @@ return min(($minute%5),0);
 
 ```
 
+<a name='hourly-multiple-at-random'></a>
+#### 4. `->hourlyMultipleAtRandom(int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null)
 
+Similar to [->hourlyAtRandom](#hourly-at-random), it is used for scheduling your commands to run every hour on random minutes. 
+Difference between this and `->hourlyAtRandom` is: `->hourlyMultipleAtRandom` allows you to run command multiple times per hour.
+
+Example use case: I want to run a command every hour, 1-5 times at random, on random minutes. E.g. run minutes:[5,11,32,44]
+
+- Runs every hour
+- Only designates random **run time(s)**
+- Runs multiple times per hour, according to `$timesMin` and `$timesMax` params
+- [!] Using it along with `->everySixHours()` or similar methods are **NOT RECOMMENDED**, because those are also time scheduling methods, and they'll overwrite each other.
+- Doesn't designate any date on the schedule. So you may have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
+
+
+
+| Parameter          | Type                | Example Value                                                                                                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|--------------------|---------------------|--------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `minMinutes`       | int                 | `15`                                                                                                                           | Minimum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                                                                                                                                                                    |
+| `maxMinutes`       | int                 | `44`                                                                                                                           | Maximum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                                                                                                                                                                    |
+| `timesMin`         | int                 | `3`                                                                                                                            | Minimum amount of times to run this command per hour (inclusive). E.g: `$timesMin=3`, `$timesMax=10`, the command will run at least 3, at the most 10 times per hour. Run amounts decided per hour basis.                                                                                                                                                                                                                                  |
+| `timesMax`         | int                 | `10`                                                                                                                           | Maximum amount of times to run this command per hour (inclusive). E.g: `$timesMin=5`, `$timesMax=17`, the command will run at least 5, at the most 17 times per hour. Run amounts decided per hour basis.                                                                                                                                                                                                                                  |
+| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                                                                                       | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization/seeding of same command schedules.**                                                                                                                                                                                          |
+| `closure`          | callable (nullable) | <pre>function (Collection $minutes,Event $event){<br><br> return $minutes->diff([4,8,15,16,23,42])->values();<br> };<br></pre> | Optional closure to tweak the designated random run minutes according to your needs. For example you may use this to run the command only on those minutes which are not in an array. <br><br> Designated random run minutes `Collection` that consist of `int` minutes (between 0-59) and `Event` (Schedule) instance is injected, meanwhile `Collection` response that contains `int` minutes between 0-59 is expected from the closure. |
+
+- ##### Example usage #1
+
+Run a command 4-5 (random) times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour between these). Minutes of each hour are random.
+
+>https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
+
+```php
+$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(0,59,4,5)->weekdays()->between('08:00','18:00');
+```
+
+
+- ##### Example usage #2
+
+Run a command exactly 8 times an hour, it should run only between 20-40 minute marks, run only on wednesdays.
+
+```php
+$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(20,40,8,8)->wednesdays();
+```
+
+- ##### Example usage #3
+
+Run a command 2-6 times an hour, it should run only between 10-48 minute marks, run only on; tuesday,thursday,saturday, it should run only on even(divisible by 2) minutes.
+
+```php
+$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2,6,null,function(Collection $designatedMinutes,Event $event){
+    return $designatedMinutes->map(function(int $minute){
+        return $minute-(($minute%2));//rounding numbers to closest even number, if the number is odd
+    });
+})->days([Schedule::TUESDAY, Schedule::THURSDAY,Schedule::SATURDAY])();
+```
 
 ---
 
@@ -367,6 +422,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 - [ ] Add `randomMultipleMinutesSchedule` to documentation
 - [ ] Separate test classes per method/macro basis
 - [ ] PHPDoc comments for methods and classes
+- [ ] Inject basis dateTime Carbon instance into the closures
 - [X] Unit/feature tests
   - [X] Time based methods and macros
     - [X] Macro registration assertion
