@@ -15,7 +15,12 @@ interface RandomNumberGeneratorAdapter
     //Boundaries are inclusive
     //E.g: [1,3]-> {1,2,3}
     //Make sure to follow this fashion accordingly per adapter.
-    public function intBetween(int $floor, int $ceil):int;//TODO: determine inclusive/exclusive boundaries!.. Determined, pass it to PHPDoc
+    /**
+     * @param int $floor Inclusive, floor/minimum value for the random value
+     * @param int $ceil Inclusive, ceil/maximum value for the random value
+     * @return int
+     */
+    public function intBetween(int $floor, int $ceil):int;
 
     public static function getAdapterSlug():string;
     public function getSlug():string;

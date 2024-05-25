@@ -1,25 +1,20 @@
 <?php
 
-namespace Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule;
+namespace Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule\RandomTimeMacros;
 
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Support\Collection;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\MersenneTwisterAdapter;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
 use Skywarth\ChaoticSchedule\Services\SeedGenerationService;
-use Skywarth\ChaoticSchedule\Tests\TestCase;
+use Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule\AbstractChaoticScheduleTest;
 
-class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
+class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
 {
-
 
     public function testRandomTimeIncorrectParameterFormatException()
     {
@@ -44,14 +39,15 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         }
 
         $evenMinuteRuns=$runDates->filter(function($runMin){
-           return $runMin%2==0;
+            return $runMin%2==0;
         });
 
         $this->assertEquals(0,$evenMinuteRuns->count());
 
     }
 
-    public function testRandomTimeClosureThrowsIncompatibleResponse()
+
+    public function testRandomTimeClosureThrowsIncompatibleClosureResponseException()
     {
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
@@ -67,33 +63,6 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $schedule=$schedule->command('test');
         $this->expectException(IncorrectRangeException::class);
         $this->getChaoticSchedule()->randomTimeSchedule($schedule,'18:00','09:00');
-    }
-
-    public function testRandomMinuteIncorrectParameterFormatException()
-    {
-        $schedule = new Schedule();
-        $schedule=$schedule->command('test');
-        $this->expectException(\OutOfRangeException::class);
-        $this->getChaoticSchedule()->randomMinuteSchedule($schedule,-55,44);
-    }
-    public function testRandomMinuteIncorrectParameterOrderException()
-    {
-        $schedule = new Schedule();
-        $schedule=$schedule->command('test');
-        $this->expectException(IncorrectRangeException::class);
-        $this->getChaoticSchedule()->randomMinuteSchedule($schedule,44,13);
-    }
-
-    public function testRandomTimeSameCommandNoIdentifierConsistency()
-    {
-        $schedule1 = new Schedule();
-        $comm1=$schedule1->command('test')->wednesdays();
-        $schedule2 = new Schedule();
-        $comm2=$schedule2->command('test')->wednesdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm2,'09:00','13:00')->nextRunDate();
-        $datesEqual=$comm1NextRun->eq($comm2NextRun);
-        $this->assertEquals(true,$datesEqual);
     }
 
     public function testRandomTimeSameCommandCustomIdentifierDifference()
@@ -119,6 +88,7 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $datesEqual=$comm1NextRun->notEqualTo($comm2NextRun);
         $this->assertEquals(true,$datesEqual);
     }
+
 
     public function testRandomTimeDifferentCommandSameCustomIdentifierConsistency()
     {
@@ -156,7 +126,6 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertEquals(1,$uniqueRunTimes->count());
         $this->assertSame($designatedRuns->toArray()[0],$uniqueRunTimes[0]);
     }
-
 
     public function testRandomTimeWithinLimits()
     {
@@ -214,7 +183,6 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertLessThan($chiSquareCriticalValue,$chiSquareStat);
     }
 
-
     public function testRandomTimeDistributionHomogeneityByEntropy()
     {
         $thresholdPercentage=90;//percentage based, between 0 and 100. maybe 95%
@@ -261,98 +229,15 @@ class RandomTimeMacrosTest extends AbstractChaoticScheduleTest
         $this->assertGreaterThanOrEqual($threshold, $entropy);
     }
 
-
-
-
-    public function testRandomMinuteClosureThrowsIncompatibleResponse()
-    {
-        $schedule = new Schedule();
-        $schedule=$schedule->command('test');
-        $this->expectException(IncompatibleClosureResponse::class);
-        $this->getChaoticSchedule()->randomMinuteSchedule($schedule,2,11,null,function (int $minute){
-            return [];
-        });
-    }
-
-
-    public function testRandomMinuteSameCommandNoIdentifierConsistency()
+    public function testRandomTimeSameCommandNoIdentifierConsistency()
     {
         $schedule1 = new Schedule();
-        $comm1=$schedule1->command('test')->tuesdays();
+        $comm1=$schedule1->command('test')->wednesdays();
         $schedule2 = new Schedule();
-        $comm2=$schedule2->command('test')->tuesdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomMinuteSchedule($comm1,10,55)->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomMinuteSchedule($comm2,10,55)->nextRunDate();
+        $comm2=$schedule2->command('test')->wednesdays();
+        $comm1NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
+        $comm2NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm2,'09:00','13:00')->nextRunDate();
         $datesEqual=$comm1NextRun->eq($comm2NextRun);
         $this->assertEquals(true,$datesEqual);
     }
-
-    public function testRandomMinuteSameCommandCustomIdentifierDifference()
-    {
-        $schedule1 = new Schedule();
-        $comm1=$schedule1->command('test')->weekdays();
-        $schedule2 = new Schedule();
-        $comm2=$schedule2->command('test')->weekdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomMinuteSchedule($comm1,1,59)->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomMinuteSchedule($comm2,1,59,'get-customized-lmao')->nextRunDate();
-        $datesEqual=$comm1NextRun->notEqualTo($comm2NextRun);
-        $this->assertEquals(true,$datesEqual);
-    }
-
-    public function testRandomMinuteWithinLimits()
-    {
-
-        $min=23;
-        $max=42;
-
-        $schedules=$this->generateRandomMinuteConsecutiveHours(
-            100,
-            self::DEFAULT_RNG_ENGINE_SLUG,
-            $min,
-            $max,
-            Carbon::createFromDate(2023,9,10)
-        );
-        $designatedRuns=$schedules->map(function (Event $schedule){
-            return $schedule->nextRunDate();
-        });
-
-
-        $designatedRuns=$designatedRuns->filter(function (Carbon $carbon) use($min,$max){
-            $minute=$carbon->minute;
-            return !($minute>=$min && $minute<=$max);
-        });
-
-        $this->assertEquals(0,$designatedRuns->count());
-    }
-
-
-    public function testRandomMinuteConsistencyThroughoutTheHour()
-    {
-        $schedules=$this->generateRandomMinuteConsecutiveMinutes(60,1,59,Carbon::createFromDate(2023,7,12),MersenneTwisterAdapter::getAdapterSlug());
-        $designatedRuns=$schedules->map(function (Event $schedule){
-            return $schedule->nextRunDate()->minute;
-        });
-
-        $uniqueRunMinutes=$designatedRuns->unique();
-
-        $this->assertEquals(1,$uniqueRunMinutes->count());
-
-
-    }
-
-    public function testRandomMinuteInConsistencyThroughoutTheDay()
-    {
-        $schedules=$this->generateRandomMinuteConsecutiveMinutes(1440,1,59,Carbon::createFromDate(2012,4,13),SeedSpringAdapter::getAdapterSlug());
-        $designatedRuns=$schedules->map(function (Event $schedule){
-            return $schedule->nextRunDate()->minute;
-        });
-
-        $uniqueRunMinutes=$designatedRuns->unique();
-
-        $this->assertNotEquals(1,$uniqueRunMinutes->count());
-
-
-    }
-
-
 }

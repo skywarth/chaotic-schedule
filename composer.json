@@ -33,6 +33,11 @@
             ]
         }
     },
+    "scripts": {
+        "test":"./vendor/bin/phpunit",
+        "test-random-time-macros":"@test --filter RandomTimeMacros",
+        "test-random-date-macros":"@test --filter RandomDateMacrosTest"
+    },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {

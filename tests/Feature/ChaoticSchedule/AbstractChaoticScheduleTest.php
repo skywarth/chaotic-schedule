@@ -39,7 +39,7 @@ abstract class AbstractChaoticScheduleTest extends TestCase
         string $rngEngineSlug=self::DEFAULT_RNG_ENGINE_SLUG
     ):Collection{
 
-        $date=$dateBasis->startOfDay();
+        $date=$dateBasis->clone()->startOfHour();
         $schedule = new Schedule();
         $schedule=$schedule->command('foo')->daily();
         $schedules=collect();

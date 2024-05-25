@@ -9,6 +9,7 @@ use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use InvalidArgumentException;
 use LogicException;
+use OutOfRangeException;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
@@ -142,7 +143,7 @@ class ChaoticSchedule
             throw new IncorrectRangeException($minMinutes,$maxMinutes);
         }
         if($minMinutes<0 || $maxMinutes>59){
-            throw new \OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
         }
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
@@ -167,6 +168,98 @@ class ChaoticSchedule
 
 
         $schedule->hourlyAt($randomMinute);
+
+        return $schedule;
+    }
+
+    /**
+     * @param Event $schedule
+     * @param int $minMinutes
+     * @param int $maxMinutes
+     * @param int $timesMin
+     * @param int $timesMax
+     * @param string|null $uniqueIdentifier
+     * @param callable|null $closure
+     * @return Event
+     * @throws IncompatibleClosureResponse
+     * @throws IncorrectRangeException
+     * @throws RunTimesExpectationCannotBeMet
+     */
+    public function randomMultipleMinutesSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
+
+        //TODO: merging this method and randomMinute() kinda makes sense, not sure if I should. Open to discussion.
+
+        if($minMinutes>$maxMinutes){
+            throw new IncorrectRangeException($minMinutes,$maxMinutes);
+        }
+        if($minMinutes<0 || $maxMinutes>59){
+            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+        }
+        if($timesMin<0 || $timesMax<0){
+            throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');//TODO: duplicate, refactor
+        }
+        if($timesMin>$timesMax){
+            throw new IncorrectRangeException($timesMin,$timesMax); //TODO: duplicate, refactor
+        }
+
+
+
+        $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
+
+        //H:i is 24 hour format
+
+        $this->getRng()->setSeed($this->getSeeder()->seedForHour($identifier));//TODO: maybe optional parameter for seed period? E.g: I want seed to be exact and same for a week
+
+        $runTimes=$this->getRng()->intBetween($timesMin,$timesMax);
+        $designatedRunMinutes=collect();
+        $possibleMinutes=collect(range($minMinutes,$maxMinutes));
+        if($possibleMinutes->count()<$timesMax){
+            $possibleMinutesCount=$possibleMinutes->count();
+            throw new RunTimesExpectationCannotBeMet("For '$identifier' command, maximum of '$timesMax' was desired however this could not be satisfied since there isn't that many minutes (only $possibleMinutesCount minutes available) for the given period and constraints. Please check your closure, times min-max and minimum/maximum minutes.");
+        }
+        for($i=0;$i<$runTimes;$i++){
+            $randomIndex=$this->getRng()->intBetween(0,$possibleMinutes->count()-1);
+            $designatedRunMinute=$possibleMinutes->pull($randomIndex);
+            $possibleMinutes=$possibleMinutes->values();
+            $designatedRunMinutes->push($designatedRunMinute);
+        }
+
+        if(!empty($closure)){
+            $designatedRunMinutes=$closure($designatedRunMinutes,$schedule);
+            $this->validateClosureResponse($designatedRunMinutes,'object');//Collection of minute of the hour (e.g: 23, 57, 7) expected
+        }
+
+        $designatedRunMinutes=$designatedRunMinutes->values();
+
+        //Filtering out past minutes, leaving only the future minutes
+        $designatedRunMinutes=$designatedRunMinutes->filter(function ($minute){
+            return $this->getBasisDate()->minute<=$minute;
+        });
+
+        $designatedNextRunMinute=null;
+        if($designatedRunMinutes->isNotEmpty()){
+            $schedule->when(function() use($designatedRunMinutes){
+                return $designatedRunMinutes->contains($this->getBasisDate()->minute);
+            });//FIXED bug here. This can easily conflict because closure is applied afterwards. I think we should go with passing array to closure
+
+            $randomMinute=$designatedRunMinutes->sort()->first();
+
+
+            $designatedNextRunMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
+
+        }else{
+            // This section means there is no designatedRun minute available.
+            // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
+            $schedule->when(false);
+            $designatedNextRunMinute=($this->getBasisDate()->minute-2)%60;//Bogus minute
+        }
+
+
+        //$schedule->hourlyAt($designatedNextRunMinute);//BUG here, hourlyAt conflicts with everySixHours, everyTwoHours etc.
+        //hourlyAt also makes testing difficult
+        $schedule->at($this->getBasisDate()->hour.':'.$designatedNextRunMinute);
+
+
 
         return $schedule;
     }
@@ -252,9 +345,8 @@ class ChaoticSchedule
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
             $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
-            $designatedRun=$possibleDates->get($randomIndex);
+            $designatedRun=$possibleDates->pull($randomIndex);
             $designatedRuns->push($designatedRun);
-            $possibleDates->forget($randomIndex);
             $possibleDates=$possibleDates->values();//re-indexing
         }
 
@@ -289,9 +381,7 @@ class ChaoticSchedule
         }else{
             // This section means there is no designatedRun date available.
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
-            $schedule->when(function() use($designatedRuns){
-              return false;
-            });
+            $schedule->when(false);
 
             $bogusDate=$periodEnd->clone()->next(RandomDateScheduleBasis::getString($periodType));//Maybe instead of this, just offset to next  year.
 
@@ -356,6 +446,7 @@ class ChaoticSchedule
     public function registerMacros(){
         $this->registerAtRandomMacro();
         $this->registerHourlyAtRandomMacro();
+        $this->registerHourlyMultipleAtRandomMacro();
         $this->registerDailyAtRandomRandomMacro();
 
         $this->registerRandomDaysMacro();
@@ -368,7 +459,7 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
@@ -381,7 +472,7 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
@@ -394,8 +485,25 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
+
+        });
+    }
+
+    /**
+     * @return void
+     */
+    private function registerHourlyMultipleAtRandomMacro(){
+        $chaoticSchedule=$this;
+        /**
+         * @method Event::hourlyMultipleAtRandom()
+         * @function hourlyMultipleAtRandom()
+         */
+        Event::macro('hourlyMultipleAtRandom', function (int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
+            //Laravel automatically injects and replaces $this in the context
+            /** @var Event $this */
+            return $chaoticSchedule->randomMultipleMinutesSchedule($this,$minMinutes,$maxMinutes,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });
     }
@@ -408,11 +516,12 @@ class ChaoticSchedule
         $chaoticSchedule=$this;
         Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
-
+            /** @var Event $this */
             return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });
     }
+
     /* //MACROS END
      __  __          _____ _____   ____   _____   ______ _   _ _____
     |  \/  |   /\   / ____|  __ \ / __ \ / ____| |  ____| \ | |  __ \

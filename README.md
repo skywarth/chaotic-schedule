@@ -27,6 +27,7 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
       - [atRandom](#at-random)
       - [dailyAtRandom](#daily-at-random)
       - [hourlyAtRandom](#hourly-at-random)
+      - [hourlyMultipleAtRandom](#hourly-multiple-at-random)
     - [Random Date Macros](#random-date-macros)
   - [Info for Nerds](#info-for-nerds)
     - [Consistency, seed and pRNG](#consistency-seed-prng)
@@ -71,7 +72,8 @@ This Laravel packages enables you to run commands on random intervals and period
 - I have a command to send notifications to my clients. But I would like it to be sent at a random time between `14:00` and `17:00`
 - I would like to send some gifts to users if they are active between my special event period which is every week `Friday` and `Saturday` between `00:00` and `04:20`
 - My boss asked me to generate and send statistical reports regarding database activities every month, but only on `Monday`, `Wednesday` and `Friday`. And this report has to be delivered in the morning between `08:00` and `09:30` and I want it to look like I've personally generated and sent it personally. So random time and date is crucial to stage this.
-- I would like to send reminders to customers and I want it to look and feel *human*. So random run times and dates every week would help me a lot. Otherwise, if I send every week on `Tuesday` `11:00` they would know this is automated and ignore these. 
+- I would like to send reminders to customers and I want it to look and feel *human*. So random run times and dates every week would help me a lot. Otherwise, if I send every week on `Tuesday` `11:00` they would know this is automated and ignore these.
+- There is a financial deficit, in order to detect the source of it I'll be running audit calculations. But these have to be random, otherwise they'll alter the records accordingly. I need to run audit calculations/assertions 3 times a day at random times.
 - I'm trying to detect certain anomalies in my data, and therefore it would help me a lot to run a command completely randomly but with a minimum of at least 100 times a year.
 
 <a name='documentation'></a>
@@ -188,7 +190,61 @@ return min(($minute%5),0);
 
 ```
 
+<a name='hourly-multiple-at-random'></a>
+#### 4. `->hourlyMultipleAtRandom(int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null)`
 
+Similar to [->hourlyAtRandom](#hourly-at-random), it is used for scheduling your commands to run every hour on random minutes. 
+Difference between this and `->hourlyAtRandom` is: `->hourlyMultipleAtRandom` allows you to run a command multiple times per hour.
+
+Example use case: I want to run a command every hour, 1-5 times at random, on random minutes. E.g. run minutes:[5,11,32,44]
+
+- Runs every hour
+- Only designates random **run time(s)**
+- Runs multiple times per hour, according to `$timesMin` and `$timesMax` params
+- [!] Using it along with `->everySixHours()` or similar (`->everyXHours()`) methods are **NOT RECOMMENDED**, because those are also time scheduling methods, and they'll overwrite each other.
+- Doesn't designate any date on the schedule. So you may have to provide some date scheduling such as `daily()`, `weekly()`, `mondays()` etc.
+- Behaves exactly the same with [->hourlyAtRandom](#hourly-at-random) if the `timesMin=1` and `timesMax=1`. (I mean duh)
+
+
+| Parameter          | Type                | Example Value                                                                                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|--------------------|---------------------|-------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+| `minMinutes`       | int                 | `15`                                                                                                                          | Minimum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                                                                                                                                                                    |
+| `maxMinutes`       | int                 | `44`                                                                                                                          | Maximum value for the random minute of hour (inclusive)                                                                                                                                                                                                                                                                                                                                                                                    |
+| `timesMin`         | int                 | `3`                                                                                                                           | Minimum amount of times to run this command per hour (inclusive). E.g: `$timesMin=3`, `$timesMax=10`, the command will run at least 3, at the most 10 times per hour. Run amounts decided per hour basis.                                                                                                                                                                                                                                  |
+| `timesMax`         | int                 | `10`                                                                                                                          | Maximum amount of times to run this command per hour (inclusive). E.g: `$timesMin=5`, `$timesMax=17`, the command will run at least 5, at the most 17 times per hour. Run amounts decided per hour basis.                                                                                                                                                                                                                                  |
+| `uniqueIdentifier` | string (nullable)   | `'my-custom-identifier'`                                                                                                      | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization/seeding of same command schedules.**                                                                                                                                                                                          |
+| `closure`          | callable (nullable) | <pre>function(Collection $minutes,Event $e){<br><br> return $minutes->diff([4,8,15,16,23,42])<br>->values();<br> };<br></pre> | Optional closure to tweak the designated random run minutes according to your needs. For example you may use this to run the command only on those minutes which are not in an array. <br><br> Designated random run minutes `Collection` that consist of `int` minutes (between 0-59) and `Event` (Schedule) instance is injected, meanwhile `Collection` response that contains `int` minutes between 0-59 is expected from the closure. |
+
+- ##### Example usage #1
+
+Run a command 4-5 (random) times per hour, only on weekdays (constant, every day), between 08:00 and 18:00 (constant, every hour between these). Minutes of each hour are random.
+
+>https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
+
+```php
+$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(0,59,4,5)->weekdays()->between('08:00','18:00');
+```
+
+
+- ##### Example usage #2
+
+Run a command exactly 8 times an hour, it should run only between 20-40 minute marks, run only on wednesdays.
+
+```php
+$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(20,40,8,8)->wednesdays();
+```
+
+- ##### Example usage #3
+
+Run a command 2-6 times an hour, it should run only between 10-48 minute marks, run only on; tuesday,thursday,saturday, it should run only on even(divisible by 2) minutes.
+
+```php
+$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2,6,null,function(Collection $designatedMinutes,Event $event){
+    return $designatedMinutes->map(function(int $minute){
+        return $minute-(($minute%2));//rounding numbers to closest even number, if the number is odd
+    });
+})->days([Schedule::TUESDAY, Schedule::THURSDAY,Schedule::SATURDAY])();
+```
 
 ---
 
@@ -338,7 +394,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
     Shuffle this array using RNG.
     Based on the requirement (like 2 times a week or 6 times a month), slice the array to get the required number of days.
     Return the selected days.
-  - It should enable the following scenarios (times in the following only define date/day based times! It doesn't take time/minute into account.)
+  - [X] It should enable the following scenarios (times in the following only define date/day based times! It doesn't take time/minute into account.)
     - [X] Once a week, any day of the week
     - [X] Once a week, among wednesday and friday
       - Example: It'll run wednesday this week. (Basically you roll dice each week)
@@ -363,7 +419,10 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 - [ ] Indicating next runs dates. Either via overriding `schedule:list` or defining a custom command which works specifically for commands that use our macros.
   - [ ] Mark the commands that use our macros.
 - [X] CI/CD pipeline (build, run tests, maybe auto publish?)
+- [X] Add `randomMultipleMinutesSchedule` to documentation
+- [X] Separate test classes per method/macro basis
 - [ ] PHPDoc comments for methods and classes
+- [ ] Inject basis dateTime Carbon instance into the closures
 - [X] Unit/feature tests
   - [X] Time based methods and macros
     - [X] Macro registration assertion
@@ -381,6 +440,12 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
     - [X] Invalid params (out of range, min-max order, format)
     - [X] Closures
   - [X] Unified macro usage feature test
+  - [ ] Timezone tests
+    - [ ] Applying timezone works in conjunction with time macros
+    - [ ] Applying timezone works in conjunction with date macros
+  - [ ] [CRUCIBLE!] Merge all distributed date-time iteration methods in tests into one
+- [X] [Use case from reddit, N1](https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3)
+- [ ] Possible bug: `->dateOfWeek` and `->dateOfWeekIso` differ per monday-sunday diff in start. Check existing assertions.
 
 <a name='credits-and-references'></a>
 ## Credits & References
