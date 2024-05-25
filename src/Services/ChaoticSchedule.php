@@ -188,7 +188,6 @@ class ChaoticSchedule
     public function randomMultipleMinutesSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
 
         //TODO: merging this method and randomMinute() kinda makes sense, not sure if I should. Open to discussion.
-        //TODO: under certain parameters, this should perform identical to randomMinute(), test it.
 
         if($minMinutes>$maxMinutes){
             throw new IncorrectRangeException($minMinutes,$maxMinutes);
@@ -346,9 +345,8 @@ class ChaoticSchedule
         $designatedRuns=collect();
         for($i=0;$i<$randomTimes;$i++){
             $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
-            $designatedRun=$possibleDates->get($randomIndex);//TODO: Maybe replace with pull? Instead of getting and removing.
+            $designatedRun=$possibleDates->pull($randomIndex);
             $designatedRuns->push($designatedRun);
-            $possibleDates->forget($randomIndex);
             $possibleDates=$possibleDates->values();//re-indexing
         }
 

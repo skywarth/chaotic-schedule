@@ -28,7 +28,6 @@ class ChaoticScheduleServiceProviderTest extends TestCase
         $this->assertTrue(Event::hasMacro('dailyAtRandom'));
         $this->assertTrue(Event::hasMacro('hourlyAtRandom'));
         $this->assertTrue(Event::hasMacro('randomDays'));
-        $this->assertTrue(Event::hasMacro('randomDays'));
         $this->assertTrue(Event::hasMacro('hourlyMultipleAtRandom'));
 
         $schedule = new Schedule();
