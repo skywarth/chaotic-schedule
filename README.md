@@ -446,6 +446,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
   - [ ] [CRUCIBLE!] Merge all distributed date-time iteration methods in tests into one
 - [X] [Use case from reddit, N1](https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3)
 - [ ] Possible bug: `->dateOfWeek` and `->dateOfWeekIso` differ per monday-sunday diff in start. Check existing assertions.
+- [ ] Upgrade the baseline PHP version to >=`8.X` for the new release, dropping support for PHP `7.4` and below, starting with new release
 
 <a name='credits-and-references'></a>
 ## Credits & References
