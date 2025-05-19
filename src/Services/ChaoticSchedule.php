@@ -4,9 +4,8 @@ namespace Skywarth\ChaoticSchedule\Services;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Carbon\Exceptions\InvalidFormatException;
+use Exception;
 use Illuminate\Console\Scheduling\Event;
-use Illuminate\Console\Scheduling\Schedule;
 use InvalidArgumentException;
 use LogicException;
 use OutOfRangeException;
@@ -70,7 +69,7 @@ class ChaoticSchedule
     /**
      * @throws IncompatibleClosureResponse
      */
-    private function validateClosureResponse($closureResponse, string $expected){
+    private function validateClosureResponse(mixed $closureResponse, string $expected):void {
         //TODO: expected should also be used as closure. Both applicable, closure and primitive types
         $type=gettype($closureResponse);
         if($type!==$expected){
@@ -107,7 +106,7 @@ class ChaoticSchedule
         try{
             $minTimeCasted=Carbon::createFromFormat('H:i',$minTime);
             $maxTimeCasted=Carbon::createFromFormat('H:i',$maxTime);
-        }catch (InvalidFormatException $ex){
+        }catch (Exception $ex){
             throw new InvalidDateFormatException("Given time format is invalid. minTime and maxTime parameters should be in 'H:i' format.",0,$ex);
         }
         if($minTimeCasted->isAfter($maxTimeCasted)){
@@ -140,7 +139,7 @@ class ChaoticSchedule
     public function randomMinuteSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
         if($minMinutes>$maxMinutes){
-            throw new IncorrectRangeException($minMinutes,$maxMinutes);
+            throw new IncorrectRangeException((string)$minMinutes,(string)$maxMinutes);
         }
         if($minMinutes<0 || $maxMinutes>59){
             throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
@@ -190,7 +189,7 @@ class ChaoticSchedule
         //TODO: merging this method and randomMinute() kinda makes sense, not sure if I should. Open to discussion.
 
         if($minMinutes>$maxMinutes){
-            throw new IncorrectRangeException($minMinutes,$maxMinutes);
+            throw new IncorrectRangeException((string)$minMinutes,(string)$maxMinutes);
         }
         if($minMinutes<0 || $maxMinutes>59){
             throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
@@ -199,7 +198,7 @@ class ChaoticSchedule
             throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');//TODO: duplicate, refactor
         }
         if($timesMin>$timesMax){
-            throw new IncorrectRangeException($timesMin,$timesMax); //TODO: duplicate, refactor
+            throw new IncorrectRangeException((string)$timesMin,(string)$timesMax); //TODO: duplicate, refactor
         }
 
 
@@ -266,17 +265,19 @@ class ChaoticSchedule
 
 
     /**
+     * @param int[] $daysOfTheWeek
      * @throws IncorrectRangeException
      * @throws InvalidScheduleBasisProvided
      * @throws IncompatibleClosureResponse|RunTimesExpectationCannotBeMet
      */
-    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
+    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
         if(empty($daysOfTheWeek)){
             $daysOfTheWeek=self::ALL_DOW;
         }else{
             //Validate DOW
             foreach ($daysOfTheWeek as $dayNum){
-                if(gettype($dayNum)!=='integer'){
+                // @phpstan-ignore notIdentical.alwaysFalse
+                if(gettype($dayNum) !== 'integer'){
                     throw new InvalidArgumentException('daysOfTheWeek contains non-integer value! It should contain only integer values which represent days of the week.');
                 }
                 if(!in_array($dayNum,self::ALL_DOW)){
@@ -291,7 +292,7 @@ class ChaoticSchedule
             throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');
         }
         if($timesMin>$timesMax){
-            throw new IncorrectRangeException($timesMin,$timesMax);
+            throw new IncorrectRangeException((string)$timesMin,(string)$timesMax);
         }
 
         RandomDateScheduleBasis::validate($periodType);
@@ -460,6 +461,7 @@ class ChaoticSchedule
         Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
             /** @var Event $this */
+            // @phpstan-ignore varTag.nativeType
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
@@ -473,6 +475,7 @@ class ChaoticSchedule
         Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
             /** @var Event $this */
+            // @phpstan-ignore varTag.nativeType
             return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
 
         });
@@ -486,6 +489,7 @@ class ChaoticSchedule
         Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
             /** @var Event $this */
+            // @phpstan-ignore varTag.nativeType
             return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
 
         });
@@ -503,6 +507,7 @@ class ChaoticSchedule
         Event::macro('hourlyMultipleAtRandom', function (int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
             /** @var Event $this */
+            // @phpstan-ignore varTag.nativeType
             return $chaoticSchedule->randomMultipleMinutesSchedule($this,$minMinutes,$maxMinutes,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });
@@ -517,6 +522,7 @@ class ChaoticSchedule
         Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
             //Laravel automatically injects and replaces $this in the context
             /** @var Event $this */
+            // @phpstan-ignore varTag.nativeType
             return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
 
         });

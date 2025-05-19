@@ -6,6 +6,7 @@ use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
 
 class RandomDateScheduleBasis
 {
+    //TODO: Change to PHP 8.X Enum
     public const WEEK=10;
     public const MONTH=20;
 
@@ -32,6 +33,9 @@ class RandomDateScheduleBasis
         return in_array($basis,self::getAll());
     }
 
+    /**
+     * @return int[]
+     */
     public static function getAll():array{
         return[
             'WEEK'=>self::WEEK,
