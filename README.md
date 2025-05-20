@@ -41,8 +41,14 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
 <a name='installation'></a>
 ## Installation
 
-0. Consider the requirements
+0. Consider the requirements and compatibilities  
    - PHP >=`7.4` is required
+   
+| PHP version | Laravel version     | Status | Remarks                                                                                                                                                                                       |
+|-------------|---------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `7.4`       | `<=v8.x`            | ✅      | Fully supported, tested, and operational. Uses old scheduling syntax.                                                                                                                         |
+| `8.1`       | ` >=v9.x` `<=v10.X` | 🔜     | This upgrade is in progress, see the [PR](https://github.com/skywarth/chaotic-schedule/pull/5).                                                                                               |
+| `8.4`       | `>=v12.x`           | ⚠️     | Current support status unknown, use at your own risk. If you confirm it to be working, please let us know. Will be done after the previous upgrade. Planned to be done before the end of 2025 |
 
 
 1. Install the package via composer:
