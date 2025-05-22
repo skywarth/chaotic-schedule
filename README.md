@@ -459,6 +459,14 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 <a name='credits-and-references'></a>
 ## Credits & References
 
+### Endorsement & media
+
+- Featured post on **Laravel News**
+  - [LinkedIn announcement](https://www.linkedin.com/posts/laravel-news_randomize-command-execution-time-with-the-activity-7204478587154874368-20I_?utm_source=share&utm_medium=member_desktop&rcm=ACoAACI6CJIB5Ovt6opOu7H5tiFTGvt-xR0kdEo)
+  - [Blog post](https://laravel-news.com/chaotic-schedule-pacakge-for-laravel) by Paul Redmond
+  - [LinkedIn Initial release announcement on](https://www.linkedin.com/posts/laravel-news_release-v110-skywarthchaotic-schedule-activity-7204135330101248004-wrIL?utm_source=share&utm_medium=member_desktop&rcm=ACoAACI6CJIB5Ovt6opOu7H5tiFTGvt-xR0kdEo)
+  - Kudos to the author and Laravel News for allowing this package to reach a greater audience 
+
 ### RNGs
 
 - [Mersenne Twister](https://github.com/ruafozy/php-mersenne-twister)
@@ -466,7 +474,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 - https://github.com/CiaccoDavide/CiaccoPRNG (Not Implemented)
 - https://github.com/hxtree/pseudorandom (Not Implemented)
 
-
+### IDE
 This project has been developed using JetBrains products.
 Thanks for their [support for open-source development](https://www.jetbrains.com/community/opensource/#support).
 
