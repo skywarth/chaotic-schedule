@@ -11,7 +11,7 @@ class IncorrectRangeException extends \Exception
      */
     public function __construct(private string $min, private string $max)
     {
-        $msg="${min} is bigger/later than ${max}! Please correct your parameters.";
+        $msg="{$this->getMin()} is bigger/later than {$this->getMax()}! Please correct your parameters.";
         parent::__construct($msg);
     }
 
