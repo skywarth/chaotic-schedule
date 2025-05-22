@@ -74,7 +74,7 @@ class SeedGenerationService
 
     private function hash(string $raw):string{
         //return hash('crc32',$raw); //Produces hexadecimal format, containing characters.
-        return crc32($raw);
+        return (string)crc32($raw);
 
     }
 

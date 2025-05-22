@@ -10,7 +10,10 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
 
     protected int $seed;
 
-    public function __construct(int $seed=null)
+    /**
+     * @throws InvalidSeedFormatException
+     */
+    public function __construct(?int $seed=null)
     {
         if(!is_null($seed)){
             $this->setSeed($seed);
@@ -31,7 +34,9 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
     }
 
 
-
+    /**
+     * @throws InvalidSeedFormatException
+     */
     public final function setSeed(int $seed):RandomNumberGeneratorAdapter
     {
         if(!$this->validateSeed($seed)){//Maybe another method for padding the missing bytes/length ?

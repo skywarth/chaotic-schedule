@@ -1,0 +1,8 @@
+parameters:
+  level: 6
+  paths:
+      - src
+      - config
+
+  excludePaths:
+    - src/RNGs/MersenneTwister.php

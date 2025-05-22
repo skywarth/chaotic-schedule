@@ -5,20 +5,27 @@ namespace Skywarth\ChaoticSchedule\Exceptions;
 class IncorrectRangeException extends \Exception
 {
 
-    private string $min;
-    private string $max;
-
     /**
      * @param string $min
      * @param string $max
      */
-    public function __construct(string $min, string $max)
+    public function __construct(private string $min, private string $max)
     {
-        $this->min = $min;
-        $this->max = $max;
-        $msg="${min} is bigger/later than ${max}! Please correct your parameters.";
+        $msg="{$this->getMin()} is bigger/later than {$this->getMax()}! Please correct your parameters.";
         parent::__construct($msg);
     }
+
+    public function getMax(): string
+    {
+        return $this->max;
+    }
+
+    public function getMin(): string
+    {
+        return $this->min;
+    }
+
+
 
 
 }

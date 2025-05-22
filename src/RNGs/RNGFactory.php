@@ -17,7 +17,6 @@ class RNGFactory
     public function __construct(string $rngEngineSlug)
     {
         $this->rngEngineSlug = $rngEngineSlug;
-        return $this;
     }
 
     /**
@@ -29,7 +28,7 @@ class RNGFactory
     }
 
 
-    public function getRngEngine(int $seed=null):RandomNumberGeneratorAdapter{
+    public function getRngEngine(?int $seed=null):RandomNumberGeneratorAdapter{
         //TODO: array containing ::class for comparison, you don't really need if-else
         if($this->getRngEngineSlug()===MersenneTwisterAdapter::getAdapterSlug()){
             return new MersenneTwisterAdapter($seed);

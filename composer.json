@@ -22,7 +22,8 @@
     ],
     "require-dev": {
         "orchestra/testbench": "^6.28",
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "phpstan/phpstan": "^2.1"
     },
     "extra": {
         "laravel": {
@@ -36,12 +37,13 @@
     "scripts": {
         "test":"./vendor/bin/phpunit",
         "test-random-time-macros":"@test --filter RandomTimeMacros",
-        "test-random-date-macros":"@test --filter RandomDateMacrosTest"
+        "test-random-date-macros":"@test --filter RandomDateMacrosTest",
+        "static-analysis": "vendor/bin/phpstan analyse"
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.1",
         "paragonie/seedspring": "^1.2"
     }
 }

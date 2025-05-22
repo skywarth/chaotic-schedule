@@ -6,7 +6,7 @@ use Skywarth\ChaoticSchedule\Exceptions\InvalidSeedFormatException;
 
 interface RandomNumberGeneratorAdapter
 {
-    public function __construct(int $seed=null);//TODO: maybe make seed into string ?
+    public function __construct(?int $seed=null);//TODO: maybe make seed into string ?
 
     public function setSeed(int $seed):RandomNumberGeneratorAdapter;
     public function getSeed():int;

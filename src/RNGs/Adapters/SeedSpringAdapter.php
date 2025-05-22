@@ -3,6 +3,7 @@
 namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
 
+use Exception;
 use ParagonIE\SeedSpring\SeedSpring;
 
 class SeedSpringAdapter extends AbstractRNGAdapter
@@ -12,6 +13,9 @@ class SeedSpringAdapter extends AbstractRNGAdapter
     private SeedSpring $seedSpring;
 
 
+    /**
+     * @throws Exception
+     */
     public function intBetween(int $floor, int $ceil): int
     {
         //Boundaries are inclusive
@@ -32,12 +36,12 @@ class SeedSpringAdapter extends AbstractRNGAdapter
     {
 
         // Check the length of the binary representation
-        return strlen($seed) === (self::PROVIDER_SEED_BYTES);
+        return strlen((string)$seed) === (self::PROVIDER_SEED_BYTES);
     }
 
     protected function setProviderSeed(int $seed): RandomNumberGeneratorAdapter
     {
-        $this->seedSpring=new SeedSpring($seed);
+        $this->seedSpring=new SeedSpring((string)$seed);
         return $this;
     }
 }
