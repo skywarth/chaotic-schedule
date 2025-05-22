@@ -41,14 +41,13 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
 <a name='installation'></a>
 ## Installation
 
-0. Consider the requirements and compatibilities  
-   - PHP >=`7.4` is required
+0. Consider the requirements and compatibilities
    
-| PHP version | Laravel version     | Status | Remarks                                                                                                                                                                                       |
-|-------------|---------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `7.4`       | `<=v8.x`            | ✅      | Fully supported, tested, and operational. Uses old scheduling syntax.                                                                                                                         |
-| `8.1`       | ` >=v9.x` `<=v10.X` | 🔜     | This upgrade is in progress, see the [PR](https://github.com/skywarth/chaotic-schedule/pull/5).                                                                                               |
-| `8.4`       | `>=v12.x`           | ⚠️     | Current support status unknown, use at your own risk. If you confirm it to be working, please let us know. Will be done after the previous upgrade. Planned to be done before the end of 2025 |
+| Package version | PHP version | Laravel version     | Status | Remarks                                                                                                                                                                                       |
+|-----------------|-------------|---------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| *(TBA)*         | `8.4`       | `>=v12.x`           | ⚠️     | Current support status unknown, use at your own risk. If you confirm it to be working, please let us know. Will be done after the previous upgrade. Planned to be done before the end of 2025 |
+| `v2.0.0`        | `8.1`       | ` >=v9.x` `<=v10.X` | ✅      | **Latest stable version**, recently released. So be on the watch for unexpected behavior.                                                                                                     |
+| `v1.1.0`        | `7.4`       | `<=v8.x`            | ✅      | Fully operational, tested, and tip-top. Uses old scheduling syntax.                                                                                                                           |
 
 
 1. Install the package via composer:
@@ -378,6 +377,10 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 <a name='roadmap-and-todos'></a>
 ## Roadmap & TODOs
 
+
+- [ ] PHP & Laravel version upgrade
+  - [X] Upgrade the baseline PHP version to >=`8.X` for the new release, dropping support for PHP `7.4` and below, starting with new release
+  - [ ] Upgrade to PHP `8.4` and Laravel `v12.x`. Beware this is not gonna be easy, there are huge changes to scheduler and CRON, as well as the API.
 - [X] Problem: These damned PRNG doesn't work well with massive seed values.
   - [X] Abstract class for RNG adapters to enforce seed format (size, type, etc.)~~
   - [X] New hashing solution for steady flow of seeds (on SeedGenerationService).
@@ -452,7 +455,6 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
   - [ ] [CRUCIBLE!] Merge all distributed date-time iteration methods in tests into one
 - [X] [Use case from reddit, N1](https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3)
 - [ ] Possible bug: `->dateOfWeek` and `->dateOfWeekIso` differ per monday-sunday diff in start. Check existing assertions.
-- [ ] Upgrade the baseline PHP version to >=`8.X` for the new release, dropping support for PHP `7.4` and below, starting with new release
 
 <a name='credits-and-references'></a>
 ## Credits & References
