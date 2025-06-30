@@ -467,6 +467,12 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
   - [LinkedIn Initial release announcement on](https://www.linkedin.com/posts/laravel-news_release-v110-skywarthchaotic-schedule-activity-7204135330101248004-wrIL?utm_source=share&utm_medium=member_desktop&rcm=ACoAACI6CJIB5Ovt6opOu7H5tiFTGvt-xR0kdEo)
   - Kudos to the author and Laravel News for allowing this package to reach a greater audience 
 
+- Featured on **Best of Laravel**
+  - https://bestoflaravel.com/go/3381
+  - [LinkedIn post](https://www.linkedin.com/posts/bestoflaravel_dailyresource-php-laravel-activity-7345302103545810945-Bp8x?utm_source=share&utm_medium=member_desktop&rcm=ACoAACI6CJIB5Ovt6opOu7H5tiFTGvt-xR0kdEo)
+  - [Instagram post](https://www.instagram.com/p/DLgs6XlItz3/?utm_source=ig_web_copy_link)
+  - There is also some Twitter post too
+
 ### RNGs
 
 - [Mersenne Twister](https://github.com/ruafozy/php-mersenne-twister)
