@@ -5,19 +5,23 @@ namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
 use Exception;
 use ParagonIE\SeedSpring\SeedSpring;
+use Skywarth\ChaoticSchedule\Exceptions\MissingSeedException;
 
 class SeedSpringAdapter extends AbstractRNGAdapter
 {
 
     public const PROVIDER_SEED_BYTES=16;
-    private SeedSpring $seedSpring;
+    private ?SeedSpring $seedSpring = null;
 
 
     /**
-     * @throws Exception
+     * @throws Exception|MissingSeedException
      */
     public function intBetween(int $floor, int $ceil): int
     {
+        if ($this->seedSpring === null) {
+            throw new MissingSeedException();
+        }
         //Boundaries are inclusive
         return $this->seedSpring->getInt($floor,$ceil);
     }

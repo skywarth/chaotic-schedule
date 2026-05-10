@@ -11,3 +11,5 @@ test_patterns = [
 [[analyzers]]
 name = "php"
 
+  [analyzers.meta]
+  exclude_patterns = ["src/RNGs/MersenneTwister.php"]

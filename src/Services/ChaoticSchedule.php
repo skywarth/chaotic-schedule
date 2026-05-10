@@ -275,25 +275,36 @@ class ChaoticSchedule
 
 
     /**
+     * Normalize and validate the days-of-the-week filter for randomDaysSchedule.
+     *
+     * @param int[]|null $daysOfTheWeek
+     * @return int[]
+     * @throws InvalidArgumentException
+     */
+    private function normalizeDaysOfTheWeek(?array $daysOfTheWeek): array
+    {
+        if (empty($daysOfTheWeek)) {
+            return self::ALL_DOW;
+        }
+        foreach ($daysOfTheWeek as $dayNum) {
+            // @phpstan-ignore notIdentical.alwaysFalse
+            if (gettype($dayNum) !== 'integer') {
+                throw new InvalidArgumentException('daysOfTheWeek contains non-integer value! It should contain only integer values which represent days of the week.');
+            }
+            if (!in_array($dayNum, self::ALL_DOW)) {
+                throw new InvalidArgumentException("The number=$dayNum doesn't correspond to a day of the week number (Carbon).");
+            }
+        }
+        return $daysOfTheWeek;
+    }
+
+    /**
      * @param int[] $daysOfTheWeek
      * @throws IncorrectRangeException
      * @throws IncompatibleClosureResponse|RunTimesExpectationCannotBeMet
      */
     public function randomDaysSchedule(Event $schedule, RandomDateScheduleBasis $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
-        if(empty($daysOfTheWeek)){
-            $daysOfTheWeek=self::ALL_DOW;
-        }else{
-            //Validate DOW
-            foreach ($daysOfTheWeek as $dayNum){
-                // @phpstan-ignore notIdentical.alwaysFalse
-                if(gettype($dayNum) !== 'integer'){
-                    throw new InvalidArgumentException('daysOfTheWeek contains non-integer value! It should contain only integer values which represent days of the week.');
-                }
-                if(!in_array($dayNum,self::ALL_DOW)){
-                    throw new InvalidArgumentException("The number=$dayNum doesn't correspond to a day of the week number (Carbon).");
-                }
-            }
-        }
+        $daysOfTheWeek = $this->normalizeDaysOfTheWeek($daysOfTheWeek);
 
         //Validations...
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
