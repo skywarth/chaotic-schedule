@@ -13,15 +13,9 @@ class SeedGenerationService
 
     private Carbon $basisDate;
 
-    /**
-     * @param Carbon|null $basisDate
-     */
-    public function __construct(?Carbon $basisDate=null)
+    public function __construct(?Carbon $basisDate = null)
     {
-        if(empty($basisDate)){
-            $basisDate=Carbon::now();
-        }
-        $this->setBasisDate($basisDate);
+        $this->setBasisDate($basisDate ?? Carbon::now());
     }
 
 
@@ -85,29 +79,21 @@ class SeedGenerationService
     }
 
 
-    public function seedByDateScheduleBasis(string $uniqueIdentifier,int $scheduleBasis):int{
-        RandomDateScheduleBasis::validate($scheduleBasis);
-
-        if($scheduleBasis==RandomDateScheduleBasis::WEEK){
-            return $this->seedForWeek($uniqueIdentifier);
-        }else if($scheduleBasis==RandomDateScheduleBasis::MONTH){
-            return $this->seedForMonth($uniqueIdentifier);
-        }else if($scheduleBasis==RandomDateScheduleBasis::YEAR){
-            return $this->seedForYear($uniqueIdentifier);
-        }else{
-            throw new \Exception('You were not supposed to do that.');
-        }
+    public function seedByDateScheduleBasis(string $uniqueIdentifier, RandomDateScheduleBasis $scheduleBasis): int
+    {
+        return match ($scheduleBasis) {
+            RandomDateScheduleBasis::WEEK => $this->seedForWeek($uniqueIdentifier),
+            RandomDateScheduleBasis::MONTH => $this->seedForMonth($uniqueIdentifier),
+            RandomDateScheduleBasis::YEAR => $this->seedForYear($uniqueIdentifier),
+        };
     }
 
-    /**
-     * @param Carbon $basisDate
-     */
-    public function setBasisDate(Carbon $basisDate): SeedGenerationService
+    public function setBasisDate(Carbon $basisDate): self
     {
         //YOU SHOULD BE REALLY CAREFUL USING THIS.
         //This method is meant mostly for testing purposes.
         $this->basisDate = $basisDate;
-        return $this;//decorator for chaining
+        return $this;
     }
 
     public function getBasisDate(): Carbon

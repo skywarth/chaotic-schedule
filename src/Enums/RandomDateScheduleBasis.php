@@ -2,56 +2,35 @@
 
 namespace Skywarth\ChaoticSchedule\Enums;
 
-use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
-
-class RandomDateScheduleBasis
+enum RandomDateScheduleBasis: int
 {
-    //TODO: Change to PHP 8.X Enum
-    public const WEEK=10;
-    public const MONTH=20;
-
-    public const YEAR=30;
-
-
-    private const DAYS_PER_PERIOD=[
-      self::WEEK=>7,
-      self::MONTH=>30,
-      self::YEAR=>365,
-    ];
-
+    case WEEK = 10;
+    case MONTH = 20;
+    case YEAR = 30;
 
     /**
-     * @throws InvalidScheduleBasisProvided
+     * Returns the Carbon period name corresponding to this basis.
+     * Used by ChaoticSchedule to call $date->startOf('week') / endOf('month') etc.
      */
-    public static function validate(int $basis):void{
-        if(!self::isValid($basis)){
-            throw new InvalidScheduleBasisProvided("Provided schedule basis is invalid, '$basis' given.");
-        }
-    }
-
-    public static function isValid(int $basis):bool{
-        return in_array($basis,self::getAll());
+    public function periodString(): string
+    {
+        return match ($this) {
+            self::WEEK => 'WEEK',
+            self::MONTH => 'MONTH',
+            self::YEAR => 'YEAR',
+        };
     }
 
     /**
-     * @return int[]
+     * Approximate day count for the period.
+     * Coarse heuristic; not authoritative (months and years vary).
      */
-    public static function getAll():array{
-        return[
-            'WEEK'=>self::WEEK,
-            'MONTH'=>self::MONTH,
-            'YEAR'=>self::YEAR,
-        ];
+    public function dayCount(): int
+    {
+        return match ($this) {
+            self::WEEK => 7,
+            self::MONTH => 30,
+            self::YEAR => 365,
+        };
     }
-
-    public static function getString(int $enumVal):string{
-        self::validate($enumVal);
-        return array_flip(self::getAll())[$enumVal];
-    }
-
-    public static function getDayCount(int $enumVal):int{
-        self::validate($enumVal);
-        return self::DAYS_PER_PERIOD[$enumVal];
-    }
-
 }

@@ -4,7 +4,7 @@ namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 
 use Skywarth\ChaoticSchedule\RNGs\MersenneTwister;
 
-class MersenneTwisterAdapter extends AbstractRNGAdapter
+final class MersenneTwisterAdapter extends AbstractRNGAdapter
 {
     private MersenneTwister $mersenneTwister;
 

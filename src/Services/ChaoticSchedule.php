@@ -3,6 +3,7 @@
 namespace Skywarth\ChaoticSchedule\Services;
 
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Exception;
 use Illuminate\Console\Scheduling\Event;
@@ -13,7 +14,6 @@ use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
 use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
-use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
 use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
@@ -21,17 +21,7 @@ use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 class ChaoticSchedule
 {
 
-    /**
-     * @var RandomNumberGeneratorAdapter
-     */
-    private RandomNumberGeneratorAdapter $rng;
-    /**
-     * @var SeedGenerationService
-     */
-    private SeedGenerationService $seeder;
-
-
-    public const ALL_DOW=[
+    public const ALL_DOW = [
         Carbon::MONDAY,
         Carbon::TUESDAY,
         Carbon::WEDNESDAY,
@@ -41,20 +31,16 @@ class ChaoticSchedule
         Carbon::SUNDAY,
     ];
 
+    private readonly RandomNumberGeneratorAdapter $rng;
 
     /**
      * Usually these parameters are resolved via dependency injection from Laravel Service Container
-     * @param SeedGenerationService $seeder SeedGenerationService instance
-     * @param RNGFactory $factory RNGFactory instance
      */
-    public function __construct(SeedGenerationService $seeder, RNGFactory $factory)
-    {
-        //$this->seeder=app()->make(SeedGenerationService::class);
-        $this->seeder=$seeder;
-        //$factory=new RNGFactory(config('chaotic-schedule.rng_engine.active_engine_slug'));
-        //$factory=app()->make(RNGFactory::class,['slug'=>'mersenne-twister']);
-        $this->rng=$factory->getRngEngine();
-        //TODO: I'm still not convinced on this. Maybe there should be a facade that brings rng and seeder together.
+    public function __construct(
+        private readonly SeedGenerationService $seeder,
+        RNGFactory $factory,
+    ) {
+        $this->rng = $factory->getRngEngine();
     }
 
 
@@ -69,20 +55,59 @@ class ChaoticSchedule
     /**
      * @throws IncompatibleClosureResponse
      */
-    private function validateClosureResponse(mixed $closureResponse, string $expected):void {
-        //TODO: expected should also be used as closure. Both applicable, closure and primitive types
-        $type=gettype($closureResponse);
-        if($type!==$expected){
-            throw new IncompatibleClosureResponse($expected,$type);
+    private function assertIntegerClosureResponse(mixed $closureResponse): void
+    {
+        if (!is_int($closureResponse)) {
+            throw new IncompatibleClosureResponse('integer', gettype($closureResponse));
+        }
+    }
+
+    /**
+     * @throws IncompatibleClosureResponse
+     */
+    private function assertObjectClosureResponse(mixed $closureResponse): void
+    {
+        if (!is_object($closureResponse)) {
+            throw new IncompatibleClosureResponse('object', gettype($closureResponse));
+        }
+    }
+
+    /**
+     * Validates that minute-of-the-hour bounds are within [0,59] and ordered.
+     *
+     * @throws IncorrectRangeException
+     */
+    private function assertMinuteRange(int $minMinutes, int $maxMinutes): void
+    {
+        if ($minMinutes > $maxMinutes) {
+            throw new IncorrectRangeException((string) $minMinutes, (string) $maxMinutes);
+        }
+        if ($minMinutes < 0 || $maxMinutes > 59) {
+            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
+        }
+    }
+
+    /**
+     * Validates that the run-times bounds are non-negative and ordered.
+     *
+     * @throws IncorrectRangeException
+     */
+    private function assertTimesRange(int $timesMin, int $timesMax): void
+    {
+        if ($timesMin < 0 || $timesMax < 0) {
+            throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');
+        }
+        if ($timesMin > $timesMax) {
+            throw new IncorrectRangeException((string) $timesMin, (string) $timesMax);
         }
     }
 
     /**
      * @param Event $schedule
-     * @param Carbon $date Designated date to run the Schedule/Event instance at
+     * @param CarbonInterface $date Designated date to run the Schedule/Event instance at
      * @return Event
      */
-    private function scheduleToDate(Event $schedule, Carbon $date):Event{
+    private function scheduleToDate(Event $schedule, CarbonInterface $date):Event{
         $day = $date->day;
         $month = $date->month;
 
@@ -122,7 +147,7 @@ class ChaoticSchedule
 
         if(!empty($closure)){
             $randomMOTD=$closure($randomMOTD,$schedule);
-            $this->validateClosureResponse($randomMOTD,'integer');
+            $this->assertIntegerClosureResponse($randomMOTD);
         }
 
 
@@ -138,12 +163,7 @@ class ChaoticSchedule
      */
     public function randomMinuteSchedule(Event $schedule, int $minMinutes=0, int $maxMinutes=59, ?string $uniqueIdentifier=null,?callable $closure=null):Event{
 
-        if($minMinutes>$maxMinutes){
-            throw new IncorrectRangeException((string)$minMinutes,(string)$maxMinutes);
-        }
-        if($minMinutes<0 || $maxMinutes>59){
-            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
-        }
+        $this->assertMinuteRange($minMinutes, $maxMinutes);
 
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
 
@@ -159,7 +179,7 @@ class ChaoticSchedule
         //TODO: test the closure as well
         if(!empty($closure)){
             $randomMinute=$closure($randomMinute,$schedule);
-            $this->validateClosureResponse($randomMinute,'integer');
+            $this->assertIntegerClosureResponse($randomMinute);
         }
 
         $randomMinute=$randomMinute%60;//Insurance. For now, it's completely for the closure.
@@ -188,18 +208,8 @@ class ChaoticSchedule
 
         //TODO: merging this method and randomMinute() kinda makes sense, not sure if I should. Open to discussion.
 
-        if($minMinutes>$maxMinutes){
-            throw new IncorrectRangeException((string)$minMinutes,(string)$maxMinutes);
-        }
-        if($minMinutes<0 || $maxMinutes>59){
-            throw new OutOfRangeException('Provide min-max minute parameters between 0 and 59.');
-        }
-        if($timesMin<0 || $timesMax<0){
-            throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');//TODO: duplicate, refactor
-        }
-        if($timesMin>$timesMax){
-            throw new IncorrectRangeException((string)$timesMin,(string)$timesMax); //TODO: duplicate, refactor
-        }
+        $this->assertMinuteRange($minMinutes, $maxMinutes);
+        $this->assertTimesRange($timesMin, $timesMax);
 
 
 
@@ -225,7 +235,7 @@ class ChaoticSchedule
 
         if(!empty($closure)){
             $designatedRunMinutes=$closure($designatedRunMinutes,$schedule);
-            $this->validateClosureResponse($designatedRunMinutes,'object');//Collection of minute of the hour (e.g: 23, 57, 7) expected
+            $this->assertObjectClosureResponse($designatedRunMinutes);//Collection of minute of the hour (e.g: 23, 57, 7) expected
         }
 
         $designatedRunMinutes=$designatedRunMinutes->values();
@@ -267,10 +277,9 @@ class ChaoticSchedule
     /**
      * @param int[] $daysOfTheWeek
      * @throws IncorrectRangeException
-     * @throws InvalidScheduleBasisProvided
      * @throws IncompatibleClosureResponse|RunTimesExpectationCannotBeMet
      */
-    public function randomDaysSchedule(Event $schedule, int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
+    public function randomDaysSchedule(Event $schedule, RandomDateScheduleBasis $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null, ?callable $closure=null):Event{
         if(empty($daysOfTheWeek)){
             $daysOfTheWeek=self::ALL_DOW;
         }else{
@@ -288,16 +297,7 @@ class ChaoticSchedule
 
         //Validations...
         $identifier=$this->getScheduleIdentifier($schedule,$uniqueIdentifier);
-        if($timesMin<0 || $timesMax<0){
-            throw new LogicException('TimesMin and TimesMax has to be non-negative numbers!');
-        }
-        if($timesMin>$timesMax){
-            throw new IncorrectRangeException((string)$timesMin,(string)$timesMax);
-        }
-
-        RandomDateScheduleBasis::validate($periodType);
-
-
+        $this->assertTimesRange($timesMin, $timesMax);
 
         $seed=$this->getSeeder()->seedByDateScheduleBasis($identifier,$periodType);
         $this->getRng()->setSeed($seed);
@@ -310,15 +310,15 @@ class ChaoticSchedule
 
 
 
-        $periodBegin=$this->getBasisDate()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=$this->getBasisDate()->endOf(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$this->getBasisDate()->startOf($periodType->periodString());
+        $periodEnd=$this->getBasisDate()->endOf($periodType->periodString());
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
 
 
         $period=collect($period->toArray());
         //TODO: either do the filtering on the CarbonPeriod or the collection. Doing on the CarbonPeriod might be far efficient
-        $possibleDates=$period->filter(function (Carbon $date) use($daysOfTheWeek){
+        $possibleDates=$period->filter(function (CarbonInterface $date) use($daysOfTheWeek){
             //filter based on designated $daysOfTheWeek and MAYBE closure
             return in_array($date->dayOfWeek,$daysOfTheWeek);
         });//values() is for reindexing, so the keys are sure to be consecutive integers
@@ -328,7 +328,7 @@ class ChaoticSchedule
 
         if(!empty($closure)){
             $possibleDates=$closure($possibleDates,$schedule);//I'm still not sure whether we should pass $possibleDates or $designatedRuns to the closure.
-            $this->validateClosureResponse($possibleDates,'object');//Collection of dates expected
+            $this->assertObjectClosureResponse($possibleDates);//Collection of dates expected
         }
 
         $possibleDates=$possibleDates->values();
@@ -343,18 +343,18 @@ class ChaoticSchedule
 
 
 
-        $designatedRuns=collect();
+        $picked = [];
         for($i=0;$i<$randomTimes;$i++){
             $randomIndex=$this->getRng()->intBetween(0,$possibleDates->count()-1);
-            $designatedRun=$possibleDates->pull($randomIndex);
-            $designatedRuns->push($designatedRun);
+            $picked[] = $possibleDates->pull($randomIndex);
             $possibleDates=$possibleDates->values();//re-indexing
         }
+        $designatedRuns = collect($picked);
 
 
 
         //Filtering out past dates, leaving only future runs
-        $designatedRuns=$designatedRuns->filter(function (Carbon $date){
+        $designatedRuns=$designatedRuns->filter(function (CarbonInterface $date){
             $dateOnly=$date->startOfDay();
             return $dateOnly->isAfter($this->getBasisDate()->startOfDay()) || $dateOnly->isSameDay($this->getBasisDate()->startOfDay()); //TODO: simplify
         });
@@ -365,16 +365,17 @@ class ChaoticSchedule
         //So this usage shouldn't stir other ->when() statements
         if($designatedRuns->isNotEmpty()){
             $schedule->when(function() use($designatedRuns){
-                return $designatedRuns->contains(function (Carbon $runDate){
+                return $designatedRuns->contains(function (CarbonInterface $runDate){
                     return $this->getBasisDate()->isSameDay($runDate);
                 });
             });
 
 
-            $closestDesignatedRun=$designatedRuns->sortBy(function (Carbon $date){
+            $closestDesignatedRun=$designatedRuns->sortBy(function (CarbonInterface $date){
                 //return $date->diffInDays($this->getBasisDate());
                 //Keeping that commented tedious bug as trophy. Costed me several hours. Suck it!
-                return $date->startOfDay()->diffInDays($this->getBasisDate()->startOfDay());
+                //Carbon 3: diffInDays returns signed float; abs() restores Carbon 2's absolute semantic.
+                return abs($date->startOfDay()->diffInDays($this->getBasisDate()->startOfDay()));
             })->first();
 
 
@@ -384,7 +385,7 @@ class ChaoticSchedule
             // So we need to prevent the command from running via returning falsy when() statement and some future bogus date
             $schedule->when(false);
 
-            $bogusDate=$periodEnd->clone()->next(RandomDateScheduleBasis::getString($periodType));//Maybe instead of this, just offset to next  year.
+            $bogusDate=$periodEnd->clone()->next($periodType->periodString());//Maybe instead of this, just offset to next  year.
 
             if($periodType===RandomDateScheduleBasis::YEAR){
                 $bogusDate->addDay();//otherwise it'll reschedule for today next year, and since we can't indicate year on laravel CRON, it resolves as to running today.
@@ -430,21 +431,17 @@ class ChaoticSchedule
 
 
 
-    /* //MACROS BEGIN
-
-       __  __    _    ____ ____   ___  ____    ____  _____ ____ ___ _   _
+    // === MACROS ===
+    /*
+     * __  __    _    ____ ____   ___  ____    ____  _____ ____ ___ _   _
       |  \/  |  / \  / ___|  _ \ / _ \/ ___|  | __ )| ____/ ___|_ _| \ | |
       | |\/| | / _ \| |   | |_) | | | \___ \  |  _ \|  _|| |  _ | ||  \| |
       | |  | |/ ___ \ |___|  _ <| |_| |___) | | |_) | |__| |_| || || |\  |
       |_|  |_/_/   \_\____|_| \_\\___/|____/  |____/|_____\____|___|_| \_|
-
-
-    */
-    //TODO: maybe move this section to service provider
-    /**
-     * @return void
      */
-    public function registerMacros(){
+
+    public function registerMacros(): void
+    {
         $this->registerAtRandomMacro();
         $this->registerHourlyAtRandomMacro();
         $this->registerHourlyMultipleAtRandomMacro();
@@ -453,82 +450,53 @@ class ChaoticSchedule
         $this->registerRandomDaysMacro();
     }
 
-    /**
-     * @return void
-     */
-    private function registerAtRandomMacro(){
-        $chaoticSchedule=$this;
-        Event::macro('atRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
-            //Laravel automatically injects and replaces $this in the context
+    private function registerAtRandomMacro(): void
+    {
+        $chaoticSchedule = $this;
+        Event::macro('atRandom', function (string $minTime, string $maxTime, ?string $uniqueIdentifier = null, ?callable $closure = null) use ($chaoticSchedule) {
             /** @var Event $this */
-            // @phpstan-ignore varTag.nativeType
-            return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
-
+            return $chaoticSchedule->randomTimeSchedule($this, $minTime, $maxTime, $uniqueIdentifier, $closure);
         });
     }
 
-    /**
-     * @return void
-     */
-    private function registerDailyAtRandomRandomMacro(){
-        $chaoticSchedule=$this;
-        Event::macro('dailyAtRandom', function (string $minTime, string $maxTime,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
-            //Laravel automatically injects and replaces $this in the context
+    private function registerDailyAtRandomRandomMacro(): void
+    {
+        $chaoticSchedule = $this;
+        Event::macro('dailyAtRandom', function (string $minTime, string $maxTime, ?string $uniqueIdentifier = null, ?callable $closure = null) use ($chaoticSchedule) {
             /** @var Event $this */
-            // @phpstan-ignore varTag.nativeType
-            return $chaoticSchedule->randomTimeSchedule($this,$minTime,$maxTime,$uniqueIdentifier,$closure);
-
+            return $chaoticSchedule->randomTimeSchedule($this, $minTime, $maxTime, $uniqueIdentifier, $closure);
         });
     }
 
-    /**
-     * @return void
-     */
-    private function registerHourlyAtRandomMacro(){
-        $chaoticSchedule=$this;
-        Event::macro('hourlyAtRandom', function (int $minMinutes=0, int $maxMinutes=59,?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
-            //Laravel automatically injects and replaces $this in the context
+    private function registerHourlyAtRandomMacro(): void
+    {
+        $chaoticSchedule = $this;
+        Event::macro('hourlyAtRandom', function (int $minMinutes = 0, int $maxMinutes = 59, ?string $uniqueIdentifier = null, ?callable $closure = null) use ($chaoticSchedule) {
             /** @var Event $this */
-            // @phpstan-ignore varTag.nativeType
-            return $chaoticSchedule->randomMinuteSchedule($this,$minMinutes,$maxMinutes,$uniqueIdentifier,$closure);
-
+            return $chaoticSchedule->randomMinuteSchedule($this, $minMinutes, $maxMinutes, $uniqueIdentifier, $closure);
         });
     }
 
-    /**
-     * @return void
-     */
-    private function registerHourlyMultipleAtRandomMacro(){
-        $chaoticSchedule=$this;
-        /**
-         * @method Event::hourlyMultipleAtRandom()
-         * @function hourlyMultipleAtRandom()
-         */
-        Event::macro('hourlyMultipleAtRandom', function (int $minMinutes=0, int $maxMinutes=59, int $timesMin=1, int $timesMax=1, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
-            //Laravel automatically injects and replaces $this in the context
+    private function registerHourlyMultipleAtRandomMacro(): void
+    {
+        $chaoticSchedule = $this;
+        Event::macro('hourlyMultipleAtRandom', function (int $minMinutes = 0, int $maxMinutes = 59, int $timesMin = 1, int $timesMax = 1, ?string $uniqueIdentifier = null, ?callable $closure = null) use ($chaoticSchedule) {
             /** @var Event $this */
-            // @phpstan-ignore varTag.nativeType
-            return $chaoticSchedule->randomMultipleMinutesSchedule($this,$minMinutes,$maxMinutes,$timesMin,$timesMax,$uniqueIdentifier,$closure);
-
+            return $chaoticSchedule->randomMultipleMinutesSchedule($this, $minMinutes, $maxMinutes, $timesMin, $timesMax, $uniqueIdentifier, $closure);
         });
     }
 
 
-    /**
-     * @return void
-     */
-    private function registerRandomDaysMacro(){
-        $chaoticSchedule=$this;
-        Event::macro('randomDays', function (int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null) use($chaoticSchedule){
-            //Laravel automatically injects and replaces $this in the context
+    private function registerRandomDaysMacro(): void
+    {
+        $chaoticSchedule = $this;
+        Event::macro('randomDays', function (RandomDateScheduleBasis $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier = null, ?callable $closure = null) use ($chaoticSchedule) {
             /** @var Event $this */
-            // @phpstan-ignore varTag.nativeType
-            return $chaoticSchedule->randomDaysSchedule($this,$periodType,$daysOfTheWeek,$timesMin,$timesMax,$uniqueIdentifier,$closure);
-
+            return $chaoticSchedule->randomDaysSchedule($this, $periodType, $daysOfTheWeek, $timesMin, $timesMax, $uniqueIdentifier, $closure);
         });
     }
 
-    /* //MACROS END
+    /*
      __  __          _____ _____   ____   _____   ______ _   _ _____
     |  \/  |   /\   / ____|  __ \ / __ \ / ____| |  ____| \ | |  __ \
     | \  / |  /  \ | |    | |__) | |  | | (___   | |__  |  \| | |  | |
@@ -536,7 +504,5 @@ class ChaoticSchedule
     | |  | |/ ____ \ |____| | \ \| |__| |____) | | |____| |\  | |__| |
     |_|  |_/_/    \_\_____|_|  \_\\____/|_____/  |______|_| \_|_____/
 
-    */
-
-
+     */
 }

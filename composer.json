@@ -20,9 +20,16 @@
             "email": "yigitk.ersoy@gmail.com"
         }
     ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/console": "^13.0",
+        "illuminate/support": "^13.0",
+        "nesbot/carbon": "^3.0",
+        "paragonie/seedspring": "^1.2"
+    },
     "require-dev": {
-        "orchestra/testbench": "^6.28",
-        "phpunit/phpunit": "^9.6",
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^11.5.50",
         "phpstan/phpstan": "^2.1"
     },
     "extra": {
@@ -41,9 +48,5 @@
         "static-analysis": "vendor/bin/phpstan analyse"
     },
     "minimum-stability": "stable",
-    "prefer-stable": true,
-    "require": {
-        "php": ">=8.1",
-        "paragonie/seedspring": "^1.2"
-    }
+    "prefer-stable": true
 }

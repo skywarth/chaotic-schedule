@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\ChaoticSchedule;
+namespace Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -8,29 +8,22 @@ use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
-use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
-use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
-use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\MersenneTwisterAdapter;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
 use Skywarth\ChaoticSchedule\Services\SeedGenerationService;
-use Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule\AbstractChaoticScheduleTest;
-use Skywarth\ChaoticSchedule\Tests\TestCase;
 
 class UnifiedMacroTest extends AbstractChaoticScheduleTest
 {
 
-    protected function randomDateTimeScheduleTestingBoilerplate(Carbon $nowMock, string $rngEngineSlug , string $periodType, array $daysOfWeek ,string $minTime,string $maxTime, int $runAmountMin, int $runAmountMax,   callable $scheduleMacroInjection ):Collection{
+    protected function randomDateTimeScheduleTestingBoilerplate(Carbon $nowMock, string $rngEngineSlug, RandomDateScheduleBasis $periodType, array $daysOfWeek, string $minTime, string $maxTime, int $runAmountMin, int $runAmountMax, callable $scheduleMacroInjection): Collection
+    {
 
         //WIP
 
         //$daysOfWeek=empty($daysOfWeek)?ChaoticSchedule::ALL_DOW:$daysOfWeek;
 
-        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$nowMock->clone()->startOf($periodType->periodString());
+        $periodEnd=$nowMock->clone()->endOf($periodType->periodString());
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
 
@@ -53,7 +46,7 @@ class UnifiedMacroTest extends AbstractChaoticScheduleTest
                 $schedule=$scheduleMacroInjection($chaoticSchedule,$schedule);
 
                 Carbon::setTestNow($date); //Mock carbon now for Laravel event
-                if($schedule->isDue(app())){
+                if($schedule->isDue(app()) && $schedule->filtersPass(app())){
 
 
                     $runDateTimes->push($date->format('d-m-Y H:i'));
