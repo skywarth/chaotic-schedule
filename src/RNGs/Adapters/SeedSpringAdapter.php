@@ -6,7 +6,7 @@ namespace Skywarth\ChaoticSchedule\RNGs\Adapters;
 use Exception;
 use ParagonIE\SeedSpring\SeedSpring;
 
-final class SeedSpringAdapter extends AbstractRNGAdapter
+class SeedSpringAdapter extends AbstractRNGAdapter
 {
 
     public const PROVIDER_SEED_BYTES=16;

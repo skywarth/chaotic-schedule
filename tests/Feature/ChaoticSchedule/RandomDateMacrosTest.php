@@ -4,7 +4,6 @@ namespace Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
