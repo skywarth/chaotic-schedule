@@ -126,7 +126,7 @@ class ChaoticSchedule
         }
 
 
-        $designatedHour=($randomMOTD/60)%24;
+        $designatedHour=intdiv($randomMOTD,60)%24;
         $designatedMinute=$randomMOTD%60;
         $schedule->at("$designatedHour:$designatedMinute");
 
