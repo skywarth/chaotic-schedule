@@ -155,11 +155,11 @@ Schedule::command('your-command-signature:here')->mondays()->atRandom('09:00','1
 Run a command weekdays at a random time between 12:00 and 20:00, but only if the hour is not 15:00.
 
 ```php
-Schedule::command('your-command-signature:here')->weekdays()->atRandom('16:00', '17:00', null, function(int $motd){
-  if($motd>=900 && $motd<=960){//$motd represents minute-of-the-day. 900th minute is 15:00. 
-    return $motd+60;
+Schedule::command('your-command-signature:here')->weekdays()->atRandom('12:00', '20:00', null, function(int $motd){
+  if($motd>=900 && $motd<=960){//$motd represents minute-of-the-day. 900th minute is 15:00.
+    return $motd+60;//if the rolled time falls within 15:00-16:00, push it one hour forward.
   }else{
-    return $motd;     
+    return $motd;
   }
 });
 ```
@@ -269,7 +269,7 @@ Schedule::command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2
     return $designatedMinutes->map(function(int $minute){
         return $minute-(($minute%2));//rounding numbers to closest even number, if the number is odd
     });
-})->days([Schedule::TUESDAY, Schedule::THURSDAY,Schedule::SATURDAY])();
+})->days([Schedule::TUESDAY, Schedule::THURSDAY,Schedule::SATURDAY]);
 ```
 
 ---
@@ -277,7 +277,7 @@ Schedule::command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2
 <a name='random-date-macros'></a>
 ### Random Date Macros
 
-#### 1. `->randomDays(int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null)`
+#### 1. `->randomDays(RandomDateScheduleBasis $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null)`
 
 Used for scheduling your commands to run at random dates for given constraints and period.
 
@@ -287,8 +287,8 @@ Used for scheduling your commands to run at random dates for given constraints a
 
 | Parameter          | Type                  | Example Value                                                                                                                                                                                                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |--------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-| `periodType`       | int                   | `RandomDateScheduleBasis::Week`                                                                                                                                                                                 | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any value presented in `RandomDateScheduleBasis` class/enum.                                                                                                                                                                                                                          |
-| `daysOfWeek`       | array<int> (nullable) | `[Carbon::Sunday, Carbon::Tuesday]`                                                                                                                                                                             | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::Wednesday, Carbon:: Monday]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used.                                                                                                                                                                                                |
+| `periodType`       | RandomDateScheduleBasis | `RandomDateScheduleBasis::WEEK`                                                                                                                                                                                 | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any case presented in `RandomDateScheduleBasis` enum (`::WEEK`, `::MONTH`, `::YEAR`).                                                                                                                                                                                                |
+| `daysOfWeek`       | array<int> (nullable) | `[Carbon::SUNDAY, Carbon::TUESDAY]`                                                                                                                                                                             | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::WEDNESDAY, Carbon::MONDAY]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used.                                                                                                                                                                                                |
 | `timesMin`         | int                   | `2`                                                                                                                                                                                                             | Defines the minimum amount of times the command is expected to run for the given period. E.g: period is `week` and `timesMin=4`, that means this command will run at least 4 times each week.                                                                                                                                                                                                                                                                                                                                                               |
 | `timesMax`         | int                   | `12`                                                                                                                                                                                                            | Defines the maximum amount of times the command is expected to run for the given period. E.g: period is `month` and `timesMin=5` and `timesMax=12`, that means this command will run at least 5, at most 12 times each month. Exact number of times that it'll run is resolved in runtime according to seed.                                                                                                                                                                                                                                                |
 | `uniqueIdentifier` | string (nullable)     | `'my-custom-identifier'`                                                                                                                                                                                        | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                                                                                                                                                                                                                                                                                   |
@@ -348,7 +348,7 @@ Run a command 1 to 2 times (as in dates) among Friday, Tuesday, Sunday, and only
 
 
 ```php
-Schedule::command('your-command-signature:here')->weekly()->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::FRIDAY,Carbon::Tuesday,Carbon::Sunday],1,2)->atRandom('14:48','16:54');
+Schedule::command('your-command-signature:here')->weekly()->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::FRIDAY,Carbon::TUESDAY,Carbon::SUNDAY],1,2)->atRandom('14:48','16:54');
 ```
 
 <a name='info-for-nerds'></a>

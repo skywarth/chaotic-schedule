@@ -202,7 +202,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
 
                     Carbon::setTestNow($date); //Mock carbon now for Laravel event
                     $this->travelTo($date);//redundant
-                    if($schedule->isDue(app())){
+                    if($schedule->isDue(app()) && $schedule->filtersPass(app())){
                         $runDateTimes->push($date->clone());
                     }
                     Carbon::setTestNow();//resetting the carbon::now to original

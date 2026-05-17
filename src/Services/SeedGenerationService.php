@@ -100,9 +100,4 @@ class SeedGenerationService
     {
         return $this->basisDate->clone();
     }
-
-
-
-
-
 }
