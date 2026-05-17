@@ -17,18 +17,32 @@ use Skywarth\ChaoticSchedule\Tests\TestCase;
 
 abstract class AbstractChaoticScheduleTest extends TestCase
 {
-    protected static ChaoticSchedule $chaoticSchedule;
-    protected static function getChaoticSchedule(){
-        if(empty(self::$chaoticSchedule)){
-            self::$chaoticSchedule=new ChaoticSchedule(
-                new SeedGenerationService(),
-                new RNGFactory('seed-spring')
-            );
-        }
-        return self::$chaoticSchedule;
+    protected const DEFAULT_RNG_ENGINE_SLUG = 'mersenne-twister';
+
+    /**
+     * Constructs a fresh ChaoticSchedule for the calling test.
+     *
+     * Each call returns a new instance; no caching, no shared state between tests.
+     * Pass an explicit $basisDate when the test asserts a deterministic claim about
+     * seed-derived output — otherwise Carbon::now() at call time is used (and any
+     * Carbon::setTestNow() pin applies). The base class resets Carbon::setTestNow()
+     * in tearDown, so a per-test pin cannot leak to a sibling test.
+     */
+    protected function makeChaoticSchedule(
+        ?Carbon $basisDate = null,
+        string $rngEngineSlug = 'seed-spring'
+    ): ChaoticSchedule {
+        return new ChaoticSchedule(
+            new SeedGenerationService($basisDate),
+            new RNGFactory($rngEngineSlug)
+        );
     }
 
-    protected const DEFAULT_RNG_ENGINE_SLUG='mersenne-twister';
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
 
     protected function generateRandomMinuteConsecutiveMinutes(

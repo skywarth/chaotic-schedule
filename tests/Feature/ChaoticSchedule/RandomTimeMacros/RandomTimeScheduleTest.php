@@ -21,7 +21,7 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(InvalidDateFormatException::class);
-        $this->getChaoticSchedule()->randomTimeSchedule($schedule,'1000','12:00');
+        $this->makeChaoticSchedule()->randomTimeSchedule($schedule,'1000','12:00');
 
     }
 
@@ -31,7 +31,7 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
         $schedule=$schedule->command('test');
         $runDates=collect();
         for ($i=0;$i<25;$i++){
-            $date=$this->getChaoticSchedule()->randomTimeSchedule($schedule,'09:06','09:44','test'.$i,function (int $motd){
+            $date=$this->makeChaoticSchedule()->randomTimeSchedule($schedule,'09:06','09:44','test'.$i,function (int $motd){
                 //return $motd;//ensures that it only schedules for odd-number minutes
                 return $motd-(($motd%2)-1);//ensures that it only schedules/runs on only odd-number minutes
             })->nextRunDate();
@@ -52,7 +52,7 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(IncompatibleClosureResponse::class);
-        $this->getChaoticSchedule()->randomTimeSchedule($schedule,'09:00','15:00','test2',function (int $motd){
+        $this->makeChaoticSchedule()->randomTimeSchedule($schedule,'09:00','15:00','test2',function (int $motd){
             return [];
         });
     }
@@ -62,29 +62,42 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(IncorrectRangeException::class);
-        $this->getChaoticSchedule()->randomTimeSchedule($schedule,'18:00','09:00');
+        $this->makeChaoticSchedule()->randomTimeSchedule($schedule,'18:00','09:00');
     }
 
     public function testRandomTimeSameCommandCustomIdentifierDifference()
     {
+        // Pin the basis so this is a deterministic claim, not a 1/240 coin flip:
+        // randomTimeSchedule picks one minute in 09:00–13:00 (240 values), so two
+        // distinct seeds collide ~0.4% of basis-days. Verified at this date.
+        // Use one ChaoticSchedule across both macro calls to mirror the
+        // production singleton binding.
+        Carbon::setTestNow(Carbon::create(2024, 4, 13, 9, 42, 0));
+        $chaoticSchedule = $this->makeChaoticSchedule();
+
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('test')->wednesdays();
         $schedule2 = new Schedule();
         $comm2=$schedule2->command('test')->wednesdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm2,'09:00','13:00','testing')->nextRunDate();
+        $comm1NextRun=$chaoticSchedule->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
+        $comm2NextRun=$chaoticSchedule->randomTimeSchedule($comm2,'09:00','13:00','testing')->nextRunDate();
         $datesEqual=$comm1NextRun->notEqualTo($comm2NextRun);
         $this->assertEquals(true,$datesEqual);
     }
 
     public function testRandomTimeDifferentCommandNoIdentifierDifference()
     {
+        // Pin the basis — same reasoning as testRandomTimeSameCommandCustomIdentifierDifference.
+        // One ChaoticSchedule instance mirrors the production singleton.
+        Carbon::setTestNow(Carbon::create(2024, 4, 13, 9, 42, 0));
+        $chaoticSchedule = $this->makeChaoticSchedule();
+
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('foo')->wednesdays();
         $schedule2 = new Schedule();
         $comm2=$schedule2->command('bar')->wednesdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm2,'09:00','13:00')->nextRunDate();
+        $comm1NextRun=$chaoticSchedule->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
+        $comm2NextRun=$chaoticSchedule->randomTimeSchedule($comm2,'09:00','13:00')->nextRunDate();
         $datesEqual=$comm1NextRun->notEqualTo($comm2NextRun);
         $this->assertEquals(true,$datesEqual);
     }
@@ -92,12 +105,18 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
 
     public function testRandomTimeDifferentCommandSameCustomIdentifierConsistency()
     {
+        // Pin the basis and reuse one ChaoticSchedule instance — mirrors the
+        // production singleton binding (ChaoticScheduleServiceProvider binds
+        // ChaoticSchedule as singleton, one per schedule:run process).
+        Carbon::setTestNow(Carbon::create(2024, 4, 13, 9, 42, 0));
+        $chaoticSchedule = $this->makeChaoticSchedule();
+
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('foo')->wednesdays();
         $schedule2 = new Schedule();
         $comm2=$schedule2->command('bar')->wednesdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm1,'09:00','13:00','testing')->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm2,'09:00','13:00','testing')->nextRunDate();
+        $comm1NextRun=$chaoticSchedule->randomTimeSchedule($comm1,'09:00','13:00','testing')->nextRunDate();
+        $comm2NextRun=$chaoticSchedule->randomTimeSchedule($comm2,'09:00','13:00','testing')->nextRunDate();
         $datesEqual=$comm1NextRun->eq($comm2NextRun);
         $this->assertEquals(true,$datesEqual);
     }
@@ -105,7 +124,7 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
     public function testRandomTimeConsistencyThroughoutTheDay()
     {
 
-        //$chaoticSchedule=$this->getChaoticSchedule();
+        //$chaoticSchedule=$this->makeChaoticSchedule();
 
         $designatedRuns=collect();
 
@@ -231,12 +250,17 @@ class RandomTimeScheduleTest extends AbstractChaoticScheduleTest
 
     public function testRandomTimeSameCommandNoIdentifierConsistency()
     {
+        // Pin the basis and reuse one ChaoticSchedule — same reasoning as
+        // testRandomTimeDifferentCommandSameCustomIdentifierConsistency.
+        Carbon::setTestNow(Carbon::create(2024, 4, 13, 9, 42, 0));
+        $chaoticSchedule = $this->makeChaoticSchedule();
+
         $schedule1 = new Schedule();
         $comm1=$schedule1->command('test')->wednesdays();
         $schedule2 = new Schedule();
         $comm2=$schedule2->command('test')->wednesdays();
-        $comm1NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
-        $comm2NextRun=$this->getChaoticSchedule()->randomTimeSchedule($comm2,'09:00','13:00')->nextRunDate();
+        $comm1NextRun=$chaoticSchedule->randomTimeSchedule($comm1,'09:00','13:00')->nextRunDate();
+        $comm2NextRun=$chaoticSchedule->randomTimeSchedule($comm2,'09:00','13:00')->nextRunDate();
         $datesEqual=$comm1NextRun->eq($comm2NextRun);
         $this->assertEquals(true,$datesEqual);
     }
