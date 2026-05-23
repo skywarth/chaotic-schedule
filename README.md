@@ -136,7 +136,7 @@ Schedule::command('your-command-signature:here')->daily()->atRandom('08:15','11:
 
 Run a command every Tuesday, Saturday and Sunday on a random time between 04:20 and 06:09
 ```php
-Schedule::command('your-command-signature:here')->days([Schedule::TUESDAY, Schedule::SATURDAY, Schedule::SUNDAY])->atRandom('04:20','06:09');
+Schedule::command('your-command-signature:here')->days([Carbon::TUESDAY, Carbon::SATURDAY, Carbon::SUNDAY])->atRandom('04:20','06:09');
 ```
 
 - ##### Example usage #3
@@ -269,7 +269,7 @@ Schedule::command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2
     return $designatedMinutes->map(function(int $minute){
         return $minute-(($minute%2));//rounding numbers to closest even number, if the number is odd
     });
-})->days([Schedule::TUESDAY, Schedule::THURSDAY,Schedule::SATURDAY]);
+})->days([Carbon::TUESDAY, Carbon::THURSDAY,Carbon::SATURDAY]);
 ```
 
 ---
@@ -415,7 +415,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
   - [ ] (Skip. Not really necessary) ~~Random for `->twiceDailyAt(1, 13, 15)`~~ 
   - [ ] (Not feasible. What are we going to bind/anchor our seed on ?) ~~Random for **custom** `everyRandomMinutes()`~~
   - [ ] [!] Seeds should be expanded and distinguished.
-      Example case: `->days(Schedule::MONDAY,Schedule::FRIDAY,Schedule::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
+      Example case: `->days(Carbon::MONDAY,Carbon::FRIDAY,Carbon::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
       Config for this might be better. `->nextRunDate()` acts up for the `->daily()`.
   - [X] Closure parameters for adjustments and flexibility
   - [X] Determine and indicate boundary inclusivity
