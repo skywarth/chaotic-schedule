@@ -5,39 +5,27 @@ namespace Skywarth\ChaoticSchedule\RNGs;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\MersenneTwisterAdapter;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\Adapters\SeedSpringAdapter;
+use UnexpectedValueException;
 
 class RNGFactory
 {
-
-    private string $rngEngineSlug;
-
-    /**
-     * @param string $rngEngineSlug
-     */
-    public function __construct(string $rngEngineSlug)
+    public function __construct(private readonly string $rngEngineSlug)
     {
-        $this->rngEngineSlug = $rngEngineSlug;
     }
 
-    /**
-     * @return string
-     */
     public function getRngEngineSlug(): string
     {
         return $this->rngEngineSlug;
     }
 
-
-    public function getRngEngine(?int $seed=null):RandomNumberGeneratorAdapter{
-        //TODO: array containing ::class for comparison, you don't really need if-else
-        if($this->getRngEngineSlug()===MersenneTwisterAdapter::getAdapterSlug()){
-            return new MersenneTwisterAdapter($seed);
-        }else if($this->getRngEngineSlug()===SeedSpringAdapter::getAdapterSlug()){
-            return new SeedSpringAdapter($seed);
-        }else{
-            throw new \UnexpectedValueException('Please provide a valid RNG Adapter slug. Example: "mersenne-twister". Check the documentation for details.');
-        }
-
+    public function getRngEngine(?int $seed = null): RandomNumberGeneratorAdapter
+    {
+        return match ($this->rngEngineSlug) {
+            MersenneTwisterAdapter::getAdapterSlug() => new MersenneTwisterAdapter($seed),
+            SeedSpringAdapter::getAdapterSlug() => new SeedSpringAdapter($seed),
+            default => throw new UnexpectedValueException(
+                'Please provide a valid RNG Adapter slug. Example: "mersenne-twister". Check the documentation for details.'
+            ),
+        };
     }
-
 }

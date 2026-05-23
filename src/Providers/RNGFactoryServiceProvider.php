@@ -16,7 +16,7 @@ class RNGFactoryServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->bind(RNGFactory::class, function($app,$parameters) {
             $slug=$parameters['slug']??config('chaotic-schedule.rng_engine.active_engine_slug');
@@ -33,7 +33,7 @@ class RNGFactoryServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
 
 

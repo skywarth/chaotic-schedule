@@ -22,14 +22,14 @@ abstract class AbstractRNGAdapter implements RandomNumberGeneratorAdapter
     }
 
     /**
-     * @return int
      * @throws MissingSeedException
      */
     public function getSeed(): int
     {
-        if(empty($this->seed)){
+        if (!isset($this->seed)) {
             throw new MissingSeedException();
         }
+
         return $this->seed;
     }
 

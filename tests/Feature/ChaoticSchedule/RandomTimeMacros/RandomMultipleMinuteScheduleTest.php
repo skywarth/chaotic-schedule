@@ -39,7 +39,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
             Carbon::setTestNow($nowMock); //Mock carbon now for Laravel event
             $schedule=$chaoticSchedule->randomMultipleMinutesSchedule($command,$minutesMin,$minutesMax,$timesMin,$timesMax,null,$closure);
 
-            if($schedule->isDue(app())){
+            if($schedule->isDue(app()) && $schedule->filtersPass(app())){
                 $runMinutes->push($nowMock->minute);
             }
             $nowMock->addminute();
@@ -202,7 +202,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
 
                     Carbon::setTestNow($date); //Mock carbon now for Laravel event
                     $this->travelTo($date);//redundant
-                    if($schedule->isDue(app())){
+                    if($schedule->isDue(app()) && $schedule->filtersPass(app())){
                         $runDateTimes->push($date->clone());
                     }
                     Carbon::setTestNow();//resetting the carbon::now to original
@@ -243,7 +243,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(IncorrectRangeException::class);
-        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,16,9);
+        $this->makeChaoticSchedule()->randomMultipleMinutesSchedule($schedule,16,9);
     }
 
     public function testRandomMultipleMinuteMinuteOutOfRangeException()
@@ -251,7 +251,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(OutOfRangeException::class);
-        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,14,62);
+        $this->makeChaoticSchedule()->randomMultipleMinutesSchedule($schedule,14,62);
     }
 
     public function testRandomMultipleMinuteTimesAmountOutOfRangeException()
@@ -259,7 +259,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(LogicException::class);
-        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,55,-3,4);
+        $this->makeChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,55,-3,4);
     }
 
     public function testRandomMultipleMinuteTimesMinimumBiggerThanMaximumException()
@@ -267,7 +267,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(IncorrectRangeException::class);
-        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,30,4,2);
+        $this->makeChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,30,4,2);
     }
 
     public function testRandomMultipleMinuteRunTimesMaxExceedsPossibleRunsException()
@@ -275,7 +275,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $schedule = new Schedule();
         $schedule=$schedule->command('test');
         $this->expectException(RunTimesExpectationCannotBeMet::class);
-        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,10,4,10);
+        $this->makeChaoticSchedule()->randomMultipleMinutesSchedule($schedule,5,10,4,10);
     }
 
     public function testRandomMultipleMinuteIncompatibleClosureResponseException()
@@ -286,7 +286,7 @@ class RandomMultipleMinuteScheduleTest extends AbstractChaoticScheduleTest
         $closure=function (Collection $designatedRunTimes,Event $schedule){
             return 55;
         };
-        $this->getChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,45,2,5,null,$closure);
+        $this->makeChaoticSchedule()->randomMultipleMinutesSchedule($schedule,10,45,2,5,null,$closure);
     }
 
     public function testRandomMultipleMinutesBehavesExactlySameWithRandomMinuteForSingleRun()

@@ -16,7 +16,7 @@ class SeedGenerationServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->singleton(SeedGenerationService::class, function($app) {
             return new SeedGenerationService();
@@ -32,7 +32,7 @@ class SeedGenerationServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
 
 

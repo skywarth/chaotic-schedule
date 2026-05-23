@@ -43,11 +43,11 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
 
 0. Consider the requirements and compatibilities
    
-| Package version | PHP version | Laravel version     | Status | Remarks                                                                                                                                                                                       |
-|-----------------|-------------|---------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| *(TBA)*         | `8.4`       | `>=v12.x`           | ⚠️     | Current support status unknown, use at your own risk. If you confirm it to be working, please let us know. Will be done after the previous upgrade. Planned to be done before the end of 2025 |
-| `v2.0.0`        | `8.1`       | ` >=v9.x` `<=v10.X` | ✅      | **Latest stable version**, recently released. So be on the watch for unexpected behavior.                                                                                                     |
-| `v1.1.0`        | `7.4`       | `<=v8.x`            | ✅      | Fully operational, tested, and tip-top. Uses old scheduling syntax.                                                                                                                           |
+| Package version | PHP version | Laravel version     | Status | Remarks                                                                                                                                                                                                                                                  |
+|-----------------|-------------|---------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `v3.0.0`        | `>=8.3`     | `>=v13.x`           | ✅      | **Latest stable version.** Targets Laravel 13 and PHP 8.3+. Examples use the modern `Schedule::` facade form (idiomatic for Laravel 11+), and the macros plug seamlessly into the L13 scheduler. The `randomDays` macro now type-hints the `RandomDateScheduleBasis` native enum. |
+| `v2.0.0`        | `>=8.1`     | `>=v9.x` `<=v10.X`  | 🟡     | Previous stable line, on maintenance only. Use this for projects on Laravel 9 or 10.                                                                                                                                                                     |
+| `v1.1.0`        | `>=7.4`     | `<=v8.x`            | 🟡     | Maintenance only. Uses the legacy Kernel-style scheduling syntax. Use for legacy Laravel 8 and earlier projects.                                                                                                                                         |
 
 
 1. Install the package via composer:
@@ -61,6 +61,17 @@ composer require skywarth/chaotic-schedule
 ```
 
 3. Done. You may now use random time and date macros on schedules
+
+
+<a name='migrating-from-v2'></a>
+### Migrating from v2.x to v3.x
+
+The documented public usage stays compatible: macro names, parameter orders, and behaviors are unchanged, and seed determinism is preserved (a given `(uniqueIdentifier, basisDate, periodType)` tuple yields the same generated runs in v2 and v3, so your existing schedules don't drift).
+
+Two scoped changes worth noting:
+
+1. **Floor versions:** v3.0.0 requires PHP `>=8.3` and Laravel `>=v13.x`. Projects on older versions should stay on the v2.x line.
+2. **`randomDays` period parameter is now a native enum.** The documented call style (`RandomDateScheduleBasis::WEEK`, `::MONTH`, `::YEAR`) continues to work unchanged because those constants are now enum cases. If you were passing raw integers (e.g. `randomDays(10, ...)`) or calling helper static methods (`RandomDateScheduleBasis::getString()`, `getDayCount()`, `validate()`, `isValid()`, `getAll()`), switch to the enum cases or `cases()` / `tryFrom()` / `->periodString()`. The `InvalidScheduleBasisProvided` exception is removed — invalid values now surface as a `TypeError` from the type system itself. Note that `TypeError` extends `\Error`, not `\Exception`, so any broad `catch (\Exception $e)` blocks you had wrapping these calls will need to be widened to `catch (\Throwable $e)` (or replaced with a typed `catch (\TypeError $e)`) if you want to recover from invalid input at runtime.
 
 
 <a name='problem-definition'></a>
@@ -83,6 +94,16 @@ This Laravel packages enables you to run commands on random intervals and period
 
 <a name='documentation'></a>
 ## Documentation
+
+> **Where to put these examples:** All examples below use the modern Laravel 11+ `Schedule::` facade idiom and are intended to live in your `routes/console.php` file (alongside your other `Schedule::command(...)` calls). They also work unchanged with the legacy `$schedule->command(...)` Kernel idiom if your app hasn't migrated to `routes/console.php` yet — same Event instance under the hood.
+>
+> Add the following imports at the top of your `routes/console.php`:
+>
+> ```php
+> use Illuminate\Support\Facades\Schedule;
+> use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
+> use Carbon\Carbon;
+> ```
 
 <a name='how-to-use'></a>
 
@@ -108,14 +129,14 @@ Used for scheduling your commands to run at random time of the day.
 
 Run a command daily on a random time between 08:15 and 11:42
 ```php
-$schedule->command('your-command-signature:here')->daily()->atRandom('08:15','11:42');
+Schedule::command('your-command-signature:here')->daily()->atRandom('08:15','11:42');
 ```
 
 - ##### Example usage #2
 
 Run a command every Tuesday, Saturday and Sunday on a random time between 04:20 and 06:09
 ```php
-$schedule->command('your-command-signature:here')->days([Schedule::TUESDAY, Schedule::SATURDAY, Schedule::SUNDAY])->atRandom('04:20','06:09');
+Schedule::command('your-command-signature:here')->days([Carbon::TUESDAY, Carbon::SATURDAY, Carbon::SUNDAY])->atRandom('04:20','06:09');
 ```
 
 - ##### Example usage #3
@@ -125,8 +146,8 @@ Run a command every Sunday between 16:00 - 17:00 and also on Monday between 09:0
 **Notice the unique identifier parameter**
 ```php
 //Observe that the both schedules share the same command, but one has custom unique identifier
-$schedule->command('your-command-signature:here')->sundays()->atRandom('16:00','17:00');
-$schedule->command('your-command-signature:here')->mondays()->atRandom('09:00','12:00','this-is-special');
+Schedule::command('your-command-signature:here')->sundays()->atRandom('16:00','17:00');
+Schedule::command('your-command-signature:here')->mondays()->atRandom('09:00','12:00','this-is-special');
 //Since the latter has a unique identifier, it has a distinguished seed which completely differentiates the generated randoms.
 ```
 
@@ -134,11 +155,11 @@ $schedule->command('your-command-signature:here')->mondays()->atRandom('09:00','
 Run a command weekdays at a random time between 12:00 and 20:00, but only if the hour is not 15:00.
 
 ```php
-$schedule->command('your-command-signature:here')->weekdays()->atRandom('16:00', '17:00', null, function(int $motd){
-  if($motd>=900 && $motd<=960){//$motd represents minute-of-the-day. 900th minute is 15:00. 
-    return $motd+60;
+Schedule::command('your-command-signature:here')->weekdays()->atRandom('12:00', '20:00', null, function(int $motd){
+  if($motd>=900 && $motd<=960){//$motd represents minute-of-the-day. 900th minute is 15:00.
+    return $motd+60;//if the rolled time falls within 15:00-16:00, push it one hour forward.
   }else{
-    return $motd;     
+    return $motd;
   }
 });
 ```
@@ -172,7 +193,7 @@ Used for scheduling you commands to run every hour at random minutes.
 Run a command every hour between 15th and 25th minutes randomly.
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyAtRandom(15,25);
+Schedule::command('your-command-signature:here')->hourlyAtRandom(15,25);
 ```
 
 - ##### Example usage #2
@@ -180,8 +201,8 @@ $schedule->command('your-command-signature:here')->hourlyAtRandom(15,25);
 Run a command every hour twice, once between 0-12 minute mark, another between 48-59 minute mark.
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyAtRandom(0,12);
-$schedule->command('your-command-signature:here')->hourlyAtRandom(48,59,'custom-identifier-to-customize-seed');
+Schedule::command('your-command-signature:here')->hourlyAtRandom(0,12);
+Schedule::command('your-command-signature:here')->hourlyAtRandom(48,59,'custom-identifier-to-customize-seed');
 ```
 
 - ##### Example usage #3
@@ -189,7 +210,7 @@ $schedule->command('your-command-signature:here')->hourlyAtRandom(48,59,'custom-
 Run a command every hour, between minutes 30-45 but only on multiplies of 5.
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyAtRandom(30,45,null,function(int $minute, Event $schedule){
+Schedule::command('your-command-signature:here')->hourlyAtRandom(30,45,null,function(int $minute, Event $schedule){
 return min(($minute%5),0);
 });
 
@@ -227,7 +248,7 @@ Run a command 4-5 (random) times per hour, only on weekdays (constant, every day
 >https://www.reddit.com/r/laravel/comments/18v714l/comment/ktkyc72/?utm_source=share&utm_medium=web2x&context=3
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(0,59,4,5)->weekdays()->between('08:00','18:00');
+Schedule::command('your-command-signature:here')->hourlyMultipleAtRandom(0,59,4,5)->weekdays()->between('08:00','18:00');
 ```
 
 
@@ -236,7 +257,7 @@ $schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(0,59,4
 Run a command exactly 8 times an hour, it should run only between 20-40 minute marks, run only on wednesdays.
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(20,40,8,8)->wednesdays();
+Schedule::command('your-command-signature:here')->hourlyMultipleAtRandom(20,40,8,8)->wednesdays();
 ```
 
 - ##### Example usage #3
@@ -244,11 +265,11 @@ $schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(20,40,
 Run a command 2-6 times an hour, it should run only between 10-48 minute marks, run only on; tuesday,thursday,saturday, it should run only on even(divisible by 2) minutes.
 
 ```php
-$schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2,6,null,function(Collection $designatedMinutes,Event $event){
+Schedule::command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,2,6,null,function(Collection $designatedMinutes,Event $event){
     return $designatedMinutes->map(function(int $minute){
         return $minute-(($minute%2));//rounding numbers to closest even number, if the number is odd
     });
-})->days([Schedule::TUESDAY, Schedule::THURSDAY,Schedule::SATURDAY])();
+})->days([Carbon::TUESDAY, Carbon::THURSDAY,Carbon::SATURDAY]);
 ```
 
 ---
@@ -256,7 +277,7 @@ $schedule->command('your-command-signature:here')->hourlyMultipleAtRandom(10,48,
 <a name='random-date-macros'></a>
 ### Random Date Macros
 
-#### 1. `->randomDays(int $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null)`
+#### 1. `->randomDays(RandomDateScheduleBasis $periodType, ?array $daysOfTheWeek, int $timesMin, int $timesMax, ?string $uniqueIdentifier=null,?callable $closure=null)`
 
 Used for scheduling your commands to run at random dates for given constraints and period.
 
@@ -266,8 +287,8 @@ Used for scheduling your commands to run at random dates for given constraints a
 
 | Parameter          | Type                  | Example Value                                                                                                                                                                                                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |--------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-| `periodType`       | int                   | `RandomDateScheduleBasis::Week`                                                                                                                                                                                 | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any value presented in `RandomDateScheduleBasis` class/enum.                                                                                                                                                                                                                          |
-| `daysOfWeek`       | array<int> (nullable) | `[Carbon::Sunday, Carbon::Tuesday]`                                                                                                                                                                             | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::Wednesday, Carbon:: Monday]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used.                                                                                                                                                                                                |
+| `periodType`       | RandomDateScheduleBasis | `RandomDateScheduleBasis::WEEK`                                                                                                                                                                                 | The most crucial parameter for random date scheduling. It defines the period of the random date range, seed basis/consistency and generated random dates. It defines the seed for the random dates, so for the given period your randoms stay consistent. You may use any case presented in `RandomDateScheduleBasis` enum (`::WEEK`, `::MONTH`, `::YEAR`).                                                                                                                                                                                                |
+| `daysOfWeek`       | array<int> (nullable) | `[Carbon::SUNDAY, Carbon::TUESDAY]`                                                                                                                                                                             | Days of the week that will be used for random date generation. Only those days you pass will be picked and used. For example: if you pass `[Carbon::WEDNESDAY, Carbon::MONDAY]`, random dates will be only on wednesdays and mondays. Since it is optional, if you don't pass anything for it that means all days of the week will be available to be used.                                                                                                                                                                                                |
 | `timesMin`         | int                   | `2`                                                                                                                                                                                                             | Defines the minimum amount of times the command is expected to run for the given period. E.g: period is `week` and `timesMin=4`, that means this command will run at least 4 times each week.                                                                                                                                                                                                                                                                                                                                                               |
 | `timesMax`         | int                   | `12`                                                                                                                                                                                                            | Defines the maximum amount of times the command is expected to run for the given period. E.g: period is `month` and `timesMin=5` and `timesMax=12`, that means this command will run at least 5, at most 12 times each month. Exact number of times that it'll run is resolved in runtime according to seed.                                                                                                                                                                                                                                                |
 | `uniqueIdentifier` | string (nullable)     | `'my-custom-identifier'`                                                                                                                                                                                        | Custom identifier that will be used for determining seed for the given command. If null/default provided, command's signature will be used for this. **It is primarily used for distinguishing randomization of same command schedules.**                                                                                                                                                                                                                                                                                                                   |
@@ -278,7 +299,7 @@ Used for scheduling your commands to run at random dates for given constraints a
 Run a command 5 to 10 times/days (as in dates) each month randomly.
 
 ```php
-$schedule->command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::MONTH,[],5,10);
+Schedule::command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::MONTH,[],5,10);
 ```
 
 - ##### Example usage #2
@@ -286,7 +307,7 @@ $schedule->command('your-command-signature:here')->randomDays(RandomDateSchedule
 Run a command exactly 2 times (as in dates) per week, but only on wednesdays or saturdays.
 
 ```php
-$schedule->command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::WEDNESDAY,Carbon::SATURDAY],2,2);
+Schedule::command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::WEDNESDAY,Carbon::SATURDAY],2,2);
 ```
 
 - ##### Example usage #3
@@ -294,7 +315,7 @@ $schedule->command('your-command-signature:here')->randomDays(RandomDateSchedule
 Run a command 15-30 times (as in dates) per year, only on Fridays.
 
 ```php
-$schedule->command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::YEAR,[Carbon::FRIDAY],15,30);
+Schedule::command('your-command-signature:here')->randomDays(RandomDateScheduleBasis::YEAR,[Carbon::FRIDAY],15,30);
 ```
 
 
@@ -303,7 +324,7 @@ $schedule->command('your-command-signature:here')->randomDays(RandomDateSchedule
 Run a command 1 to 3 times (as in dates) per month, only on weekends, and only on odd days .
 
 ```php
-$schedule->command('your-command-signature:here')->randomDays(
+Schedule::command('your-command-signature:here')->randomDays(
     RandomDateScheduleBasis::MONTH,
     [Carbon::SATURDAY,Carbon::SUNDAY],
     1,3,
@@ -327,7 +348,7 @@ Run a command 1 to 2 times (as in dates) among Friday, Tuesday, Sunday, and only
 
 
 ```php
-$schedule->command('your-command-signature:here')->weekly()->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::FRIDAY,Carbon::Tuesday,Carbon::Sunday],1,2)->atRandom('14:48','16:54');
+Schedule::command('your-command-signature:here')->weekly()->randomDays(RandomDateScheduleBasis::WEEK,[Carbon::FRIDAY,Carbon::TUESDAY,Carbon::SUNDAY],1,2)->atRandom('14:48','16:54');
 ```
 
 <a name='info-for-nerds'></a>
@@ -378,9 +399,9 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
 ## Roadmap & TODOs
 
 
-- [ ] PHP & Laravel version upgrade
+- [X] PHP & Laravel version upgrade
   - [X] Upgrade the baseline PHP version to >=`8.X` for the new release, dropping support for PHP `7.4` and below, starting with new release
-  - [ ] Upgrade to PHP `8.4` and Laravel `v12.x`. Beware this is not gonna be easy, there are huge changes to scheduler and CRON, as well as the API.
+  - [X] Upgrade to PHP `>=8.3` and Laravel `>=v13.x` (released as v3.0.0). All macros work seamlessly with the modern `Schedule::` facade syntax. `randomDays` now uses a native PHP enum.
 - [X] Problem: These damned PRNG doesn't work well with massive seed values.
   - [X] Abstract class for RNG adapters to enforce seed format (size, type, etc.)~~
   - [X] New hashing solution for steady flow of seeds (on SeedGenerationService).
@@ -394,7 +415,7 @@ But other than that, as the *Jules* from *Pulp Fiction* said:
   - [ ] (Skip. Not really necessary) ~~Random for `->twiceDailyAt(1, 13, 15)`~~ 
   - [ ] (Not feasible. What are we going to bind/anchor our seed on ?) ~~Random for **custom** `everyRandomMinutes()`~~
   - [ ] [!] Seeds should be expanded and distinguished.
-      Example case: `->days(Schedule::MONDAY,Schedule::FRIDAY,Schedule::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
+      Example case: `->days(Carbon::MONDAY,Carbon::FRIDAY,Carbon::SATURDAY)->atRandom('09:00','22:44')`. Otherwise, it doesn't display next due date correctly. Not really a bug but incorrect in terms of informing the user.
       Config for this might be better. `->nextRunDate()` acts up for the `->daily()`.
   - [X] Closure parameters for adjustments and flexibility
   - [X] Determine and indicate boundary inclusivity

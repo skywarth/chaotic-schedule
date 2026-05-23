@@ -4,7 +4,6 @@ namespace Skywarth\ChaoticSchedule\Tests\Feature\ChaoticSchedule;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Illuminate\Console\Scheduling\Event;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -12,25 +11,21 @@ use LogicException;
 use Skywarth\ChaoticSchedule\Enums\RandomDateScheduleBasis;
 use Skywarth\ChaoticSchedule\Exceptions\IncompatibleClosureResponse;
 use Skywarth\ChaoticSchedule\Exceptions\IncorrectRangeException;
-use Skywarth\ChaoticSchedule\Exceptions\InvalidDateFormatException;
-use Skywarth\ChaoticSchedule\Exceptions\InvalidScheduleBasisProvided;
 use Skywarth\ChaoticSchedule\Exceptions\RunTimesExpectationCannotBeMet;
-use Skywarth\ChaoticSchedule\RNGs\Adapters\RandomNumberGeneratorAdapter;
 use Skywarth\ChaoticSchedule\RNGs\RNGFactory;
 use Skywarth\ChaoticSchedule\Services\ChaoticSchedule;
 use Skywarth\ChaoticSchedule\Services\SeedGenerationService;
-use Skywarth\ChaoticSchedule\Tests\TestCase;
 use TypeError;
 
 class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 {
 
 
-    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, int $periodType, array $daysOfWeek ,$timesMin, $timesMax,string $rngEngineSlug, ?callable $closure=null,?string $uniqueIdentifier=null):Collection{
-
+    protected function randomDateScheduleTestingBoilerplate(Carbon $nowMock, RandomDateScheduleBasis $periodType, array $daysOfWeek, $timesMin, $timesMax, string $rngEngineSlug, ?callable $closure=null, ?string $uniqueIdentifier=null): Collection
+    {
         //assertion
-        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin = $nowMock->clone()->startOf($periodType->periodString());
+        $periodEnd = $nowMock->clone()->endOf($periodType->periodString());
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd);
 
@@ -48,7 +43,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
 
             Carbon::setTestNow($date); //Mock carbon now for Laravel event
-            if($schedule->isDue(app())){
+            if($schedule->isDue(app()) && $schedule->filtersPass(app())){
 
                 $runDates->push($date);
 
@@ -248,7 +243,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
           return $runDates->sortBy(function (Carbon $date){
               return $date->timestamp;
           })->filter(function (Carbon $date) use (&$latestDate,$bufferWeeks){
-                 if(empty($latestDate) || $date->diffInWeeks($latestDate)>=$bufferWeeks){
+                 if(empty($latestDate) || abs($date->diffInWeeks($latestDate))>=$bufferWeeks){
                      $latestDate=$date;
                      return true;
                  }else{
@@ -262,7 +257,7 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $lastDate=null;
         foreach ($runDates as $runDate){
             if(!empty($lastDate)){
-                $diffInWeeks=$runDate->diffInWeeks($lastDate);
+                $diffInWeeks=abs($runDate->diffInWeeks($lastDate));
                 $this->assertTrue($diffInWeeks>=$bufferWeeks);
             }
 
@@ -401,13 +396,13 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
 
     public function testInvalidPeriodTypeValue()
     {
-        $nowMock=Carbon::createFromDate(2020,8,9);
-        $periodType=50;
-        $timesMin=4;
-        $timesMax=4;
-        $daysOfWeek=ChaoticSchedule::ALL_DOW;
-        $this->expectException(InvalidScheduleBasisProvided::class);
-        $this->randomDateScheduleTestingBoilerplate($nowMock,$periodType,$daysOfWeek,$timesMin,$timesMax,'seed-spring');
+        $nowMock = Carbon::createFromDate(2020, 8, 9);
+        $periodType = 50;
+        $timesMin = 4;
+        $timesMax = 4;
+        $daysOfWeek = ChaoticSchedule::ALL_DOW;
+        $this->expectException(\TypeError::class);
+        $this->randomDateScheduleTestingBoilerplate($nowMock, $periodType, $daysOfWeek, $timesMin, $timesMax, 'seed-spring');
     }
 
     public function testImplicitlyInvalidDowValues()
@@ -432,8 +427,8 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $timesMin=0;
         $timesMax=6;
         $daysOfWeek=ChaoticSchedule::ALL_DOW;
-        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$nowMock->clone()->startOf($periodType->periodString());
+        $periodEnd=$nowMock->clone()->endOf($periodType->periodString());
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
         $lastDesignatedRuns=null;
@@ -454,8 +449,8 @@ class RandomDateMacrosTest extends AbstractChaoticScheduleTest
         $timesMin=7;
         $timesMax=12;
         $daysOfWeek=[Carbon::MONDAY,Carbon::TUESDAY,Carbon::FRIDAY,Carbon::SUNDAY];
-        $periodBegin=$nowMock->clone()->startOf(RandomDateScheduleBasis::getString($periodType));
-        $periodEnd=$nowMock->clone()->endOf(RandomDateScheduleBasis::getString($periodType));
+        $periodBegin=$nowMock->clone()->startOf($periodType->periodString());
+        $periodEnd=$nowMock->clone()->endOf($periodType->periodString());
 
         $period=CarbonPeriod::create($periodBegin, $periodEnd)->toArray();
         $lastDesignatedRuns=null;

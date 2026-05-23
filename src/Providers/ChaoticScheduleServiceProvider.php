@@ -16,7 +16,7 @@ class ChaoticScheduleServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/config.php', 'chaotic-schedule');
@@ -33,7 +33,7 @@ class ChaoticScheduleServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
 
         if ($this->app->runningInConsole()) {
