@@ -34,6 +34,7 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
     - [Asserting the chaos](#asserting-the-chaos)
     - [Performance](#performance)
 - [Roadmap & TODOs](#roadmap-and-todos)
+    - [Migration guide](#migrating-from-v2)
 - [Credits & References](#credits-and-references)
 
 
@@ -45,7 +46,7 @@ Packagist: https://packagist.org/packages/skywarth/chaotic-schedule
    
 | Package version | PHP version | Laravel version     | Status | Remarks                                                                                                                                                                                                                                                  |
 |-----------------|-------------|---------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `v3.0.0`        | `>=8.3`     | `>=v13.x`           | ✅      | **Latest stable version.** Targets Laravel 13 and PHP 8.3+. Examples use the modern `Schedule::` facade form (idiomatic for Laravel 11+), and the macros plug seamlessly into the L13 scheduler. The `randomDays` macro now type-hints the `RandomDateScheduleBasis` native enum. |
+| `v3.0.0`        | `>=8.3`     | `>=v13.x`           | ✅      | **Latest stable version.** Targets Laravel 13 and PHP 8.3+. |
 | `v2.0.0`        | `>=8.1`     | `>=v9.x` `<=v10.X`  | 🟡     | Previous stable line, on maintenance only. Use this for projects on Laravel 9 or 10.                                                                                                                                                                     |
 | `v1.1.0`        | `>=7.4`     | `<=v8.x`            | 🟡     | Maintenance only. Uses the legacy Kernel-style scheduling syntax. Use for legacy Laravel 8 and earlier projects.                                                                                                                                         |
 
@@ -61,17 +62,6 @@ composer require skywarth/chaotic-schedule
 ```
 
 3. Done. You may now use random time and date macros on schedules
-
-
-<a name='migrating-from-v2'></a>
-### Migrating from v2.x to v3.x
-
-The documented public usage stays compatible: macro names, parameter orders, and behaviors are unchanged, and seed determinism is preserved (a given `(uniqueIdentifier, basisDate, periodType)` tuple yields the same generated runs in v2 and v3, so your existing schedules don't drift).
-
-Two scoped changes worth noting:
-
-1. **Floor versions:** v3.0.0 requires PHP `>=8.3` and Laravel `>=v13.x`. Projects on older versions should stay on the v2.x line.
-2. **`randomDays` period parameter is now a native enum.** The documented call style (`RandomDateScheduleBasis::WEEK`, `::MONTH`, `::YEAR`) continues to work unchanged because those constants are now enum cases. If you were passing raw integers (e.g. `randomDays(10, ...)`) or calling helper static methods (`RandomDateScheduleBasis::getString()`, `getDayCount()`, `validate()`, `isValid()`, `getAll()`), switch to the enum cases or `cases()` / `tryFrom()` / `->periodString()`. The `InvalidScheduleBasisProvided` exception is removed — invalid values now surface as a `TypeError` from the type system itself. Note that `TypeError` extends `\Error`, not `\Exception`, so any broad `catch (\Exception $e)` blocks you had wrapping these calls will need to be widened to `catch (\Throwable $e)` (or replaced with a typed `catch (\TypeError $e)`) if you want to recover from invalid input at runtime.
 
 
 <a name='problem-definition'></a>
@@ -393,6 +383,15 @@ Hence, it is no surprise these calculations, randomization (pseudo) and designat
 But other than that, as the *Jules* from *Pulp Fiction* said:
 > "As far as I know, MF is tip-top"  
 
+<a name='migrating-from-v2'></a>
+### Migrating from v2.x to v3.x
+
+The documented public usage stays compatible: macro names, parameter orders, and behaviors are unchanged, and seed determinism is preserved (a given `(uniqueIdentifier, basisDate, periodType)` tuple yields the same generated runs in v2 and v3, so your existing schedules don't drift).
+
+Two scoped changes worth noting:
+
+1. **Floor versions:** v3.0.0 requires PHP `>=8.3` and Laravel `>=v13.x`. Projects on older versions should stay on the v2.x line.
+2. **`randomDays` period parameter is now a native enum.** The documented call style (`RandomDateScheduleBasis::WEEK`, `::MONTH`, `::YEAR`) continues to work unchanged because those constants are now enum cases. If you were passing raw integers (e.g. `randomDays(10, ...)`) or calling helper static methods (`RandomDateScheduleBasis::getString()`, `getDayCount()`, `validate()`, `isValid()`, `getAll()`), switch to the enum cases or `cases()` / `tryFrom()` / `->periodString()`. The `InvalidScheduleBasisProvided` exception is removed — invalid values now surface as a `TypeError` from the type system itself. Note that `TypeError` extends `\Error`, not `\Exception`, so any broad `catch (\Exception $e)` blocks you had wrapping these calls will need to be widened to `catch (\Throwable $e)` (or replaced with a typed `catch (\TypeError $e)`) if you want to recover from invalid input at runtime.
 
 
 <a name='roadmap-and-todos'></a>
